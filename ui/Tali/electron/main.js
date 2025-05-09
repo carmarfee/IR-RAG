@@ -6,12 +6,15 @@ import { fileURLToPath } from 'url'
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = dirname(__filename)
 
+
+
 function createWindow() {
     const mainWindow = new BrowserWindow({
-        width: 800,
-        height: 600,
+        width: 900,
+        height: 850,
+        minWidth: 800,
+        minHeight: 600,
         titleBarStyle: 'hidden',
-        transparent: true,
         webPreferences: {
             preload: join(__dirname, 'preload.js'),
         },
@@ -19,14 +22,8 @@ function createWindow() {
             color: 'rgba(0,0,0,0)',
             height: 25,
             symbolColor: 'black'
-        },
+        }
     });
-
-    // if (process.env.NODE_ENV === 'development') {
-    //     mainWindow.loadURL('http://localhost:3000');
-    // } else {
-    //     mainWindow.loadFile(join(__dirname, 'dist', 'index.html'));
-    // }
     mainWindow.loadURL('http://localhost:3000');
 }
 

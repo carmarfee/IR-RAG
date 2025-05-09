@@ -1,13 +1,35 @@
-import { createRouter, createWebHistory, createWebHashHistory } from 'vue-router'
-import Home from '../views/home.vue'
+import { createRouter, createWebHashHistory } from 'vue-router'
+import DocSearch from '@/views/DocSearch.vue';
+
 
 
 const routes = [
     {
         path: '/', 
-        name: 'Home', 
-        component: Home
+        name: '文档搜索', 
+        component: DocSearch,
+    },
+    {
+        path: '/History', 
+        name: '搜索记录', 
+        component: () => import('@/views/History.vue'),
+    },
+    {
+        path: '/DocCrawler',
+        name: '文档爬取',
+        component: () => import('@/views/DocCrawler.vue'),
+    },
+    {
+        path: '/DocPrepare', 
+        name: '文档处理', 
+        component: () => import('@/views/DocPrepare.vue'),
+    },
+    {
+        path: '/Setting',
+        name: '系统设置',
+        component: () => import('@/views/Setting.vue'),
     }
+
 ]
 
 const router = createRouter({
