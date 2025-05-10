@@ -1,4 +1,4 @@
 # 忽略 data/ 下的所有文件
-data/*
+data/**/*
 # 但不忽略 data/readme.md
 !data/readme.md
