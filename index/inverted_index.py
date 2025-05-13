@@ -60,6 +60,7 @@ class InvertedIndexBuilder:
         self.doc_lengths = None
         self.feature_names = None
         self.metadata = None
+        self.doc_id_mapping = None  # 添加文档ID映射
         
     def load_preprocessed_data(self):
         """加载预处理后的数据"""
@@ -83,6 +84,21 @@ class InvertedIndexBuilder:
             with open(matrix_path, 'rb') as f:
                 self.tfidf_matrix = pickle.load(f)
             logger.info(f"成功加载TF-IDF矩阵，维度: {self.tfidf_matrix.shape}")
+            
+            # 尝试加载文档ID映射
+            doc_id_mapping_path = os.path.join(self.preprocessed_data_dir, "doc_id_mapping.pkl")
+            if os.path.exists(doc_id_mapping_path):
+                with open(doc_id_mapping_path, 'rb') as f:
+                    self.doc_id_mapping = pickle.load(f)
+                logger.info(f"成功加载文档ID映射，共{len(self.doc_id_mapping)}个映射")
+            else:
+                # 如果没有专门的映射文件，检查处理后的数据是否包含doc_id
+                if 'doc_id' in self.processed_data.columns:
+                    self.doc_id_mapping = self.processed_data['doc_id'].tolist()
+                    logger.info(f"从处理后的数据中提取文档ID映射，共{len(self.doc_id_mapping)}个文档")
+                else:
+                    logger.warning("未找到文档ID映射，将使用行索引作为文档ID")
+                    self.doc_id_mapping = None
             
             return True
         except Exception as e:
@@ -116,10 +132,16 @@ class InvertedIndexBuilder:
         
         # 遍历所有非零元素
         for i, j, v in zip(cx.row, cx.col, cx.data):
-            # i: 文档ID, j: 特征(词)的索引, v: TF-IDF值
+            # i: 矩阵行索引, j: 特征(词)的索引, v: TF-IDF值
             if v > 0:  # 只记录TF-IDF值大于0的条目
                 term = self.feature_names[j]
-                doc_id = int(i)  # 确保是Python原生int类型
+                
+                # 使用原始文档ID而不是矩阵行索引
+                if self.doc_id_mapping is not None:
+                    doc_id = int(self.doc_id_mapping[i])  # 获取原始文档ID
+                else:
+                    doc_id = int(i)  # 如果没有映射，则使用矩阵行索引
+                
                 weight = float(v)  # 确保是Python原生float类型
                 
                 # 将(文档ID, 权重)对添加到该词的倒排列表中
@@ -136,7 +158,8 @@ class InvertedIndexBuilder:
             "total_documents": int(len(self.processed_data)),  # 确保是原生int类型
             "vocabulary_size": int(len(self.feature_names)),
             "total_index_entries": int(total_entries),
-            "average_postings_per_term": float(total_entries / max(1, len(self.inverted_index)))
+            "average_postings_per_term": float(total_entries / max(1, len(self.inverted_index))),
+            "uses_original_doc_ids": self.doc_id_mapping is not None  # 记录是否使用了原始文档ID
         }
         
         return True
@@ -223,13 +246,33 @@ class InvertedIndexBuilder:
             # 保存文档元数据（用于结果展示）
             doc_meta_file = os.path.join(self.output_dir, "document_metadata.csv")
             if self.processed_data is not None:
-                # 只保存必要的列
-                meta_columns = ['title', 'source', 'publish_time']
+                # 确保包含doc_id列
+                meta_columns = ['doc_id', 'title', 'source', 'publish_time']
                 meta_columns = [col for col in meta_columns if col in self.processed_data.columns]
                 
-                # 确保至少有title列
-                if 'title' in self.processed_data.columns:
+                # 添加内容预览列
+                if 'content' in self.processed_data.columns:
+                    # 创建一个内容预览列，提取前50个字符
+                    self.processed_data['content_preview'] = self.processed_data['content'].apply(
+                        lambda x: str(x)[:50] + '...' if isinstance(x, str) and len(str(x)) > 50 else str(x)[:50]
+                    )
+                    meta_columns.append('content_preview')
+                
+                # 保存文档元数据，使用doc_id作为索引
+                if 'doc_id' in self.processed_data.columns:
+                    # 使用doc_id作为索引列
+                    doc_meta = self.processed_data[meta_columns].copy()
+                    doc_meta.set_index('doc_id', inplace=True)
+                    doc_meta.to_csv(doc_meta_file, encoding='utf-8')
+                else:
+                    # 如果没有doc_id列，则使用默认索引
                     self.processed_data[meta_columns].to_csv(doc_meta_file, index=True, encoding='utf-8')
+            
+            # 如果存在文档ID映射，保存它
+            if self.doc_id_mapping is not None:
+                doc_id_map_file = os.path.join(self.output_dir, "doc_id_mapping.json")
+                with open(doc_id_map_file, 'w', encoding='utf-8') as f:
+                    json.dump(convert_numpy_types(self.doc_id_mapping), f, ensure_ascii=False)
             
             # 保存元数据 (处理NumPy类型)
             meta_file = os.path.join(self.output_dir, "index_metadata.json")

@@ -14,6 +14,7 @@ from bs4 import BeautifulSoup
 from urllib.parse import urljoin, urlparse
 from concurrent.futures import ThreadPoolExecutor
 import networkx as nx
+import shutil
 
 
 class DatabaseManager:
@@ -524,10 +525,11 @@ class EncodingHandler:
 class WebCrawler:
     """网络爬虫主类"""
     
-    def __init__(self,config_file=None, output_dir=None,start_urls=None, base_url=None, max_pages=100, iterations=10, timeout=10):
+    def __init__(self, config_file=None, output_dir=None, start_urls=None, base_url=None, max_pages=100, iterations=10, timeout=10):
         """初始化爬虫"""
         
         # 基本配置
+        self.config_file = config_file
         self.output_dir = output_dir
         self.base_url = base_url
         self.max_pages = max_pages
@@ -536,8 +538,20 @@ class WebCrawler:
         self.urls_taken = set()
         self.page_count = 0
         
+        # 停止标志
+        self.stop_requested = False
+        
+        # 恢复状态存储
+        self.resume_state = {
+            "pending_urls": [],
+            "current_iteration": 0,
+            "is_paused": False
+        }
+        
         # 设置日志
         self._setup_logging()
+        self.progress_log_path = "crawler/progress.jsonl"
+        self.resume_state_path = "crawler/resume_state.json"
         
         # 下载文件类型
         self.download_types = ["pdf", "doc", "docx", "xls", "xlsx", "ppt", "pptx", "txt", "zip", "rar"]
@@ -570,23 +584,34 @@ class WebCrawler:
         }
         
         # 初始化起始URL
-        self.start_urls = start_urls
+        self.start_urls = start_urls or []
         
         # 初始化数据库
-        self.db_path = os.path.join(self.output_dir, 'crawler_data.db')
-        self.db = DatabaseManager(self.db_path)
+        self.db_path = os.path.join(self.output_dir, 'crawler_data.db') if self.output_dir else None
+        self.db = None  # 在initialize方法中初始化
         
         # 初始化PageRank计算器
-        self.pagerank = PageRankCalculator()
+        self.pagerank = None  # 在initialize方法中初始化
         
         # 初始化内容提取器
-        self.content_extractor = ContentExtractor()
+        self.content_extractor = None  # 在initialize方法中初始化
         
         # 初始化编码处理器
-        self.encoding_handler = EncodingHandler()
-        
-        # 加载配置文件
-        self.load_config(config_file)
+        self.encoding_handler = None  # 在initialize方法中初始化
+    
+    def write_progress(self,message_type,data):
+        """写入进度信息到日志文件"""
+        try:
+            message = {
+                'type': message_type,
+                'timestamp': datetime.now().isoformat(),
+                'data': data
+            }
+            with open(self.progress_log_path, 'a', encoding='utf-8') as f:
+                f.write(json.dumps(message, ensure_ascii=False) + '\n')
+                f.flush()  # 立即刷新到磁盘
+        except Exception as e:
+            self.logger.error(f"写入进度失败: {e}")
     
     def _setup_logging(self):
         """配置日志"""
@@ -757,6 +782,14 @@ class WebCrawler:
                 self.page_count += 1
                 self.logger.info(f"已保存页面: {url} - {extracted_content['title']}")
                 
+                self.write_progress('progress_update', {
+                    'current_pages': self.page_count,
+                    'max_pages': self.max_pages,
+                    'progress_percentage': round((self.page_count / self.max_pages) * 100, 2),
+                    'url': url,
+                    'title': extracted_content['title']
+                })
+                
                 # 保存原始HTML以便调试
                 if self.page_count % 50 == 0:  # 每50页保存一次样本
                     sample_path = os.path.join(self.output_dir, f"sample_page_{self.page_count}.html")
@@ -786,27 +819,259 @@ class WebCrawler:
         new_urls = []
         with ThreadPoolExecutor(max_workers=self.crawl_settings.get('max_concurrent_requests', 5)) as executor:
             # 使用并行执行
-            results = list(executor.map(self.process_page, urls))
+            future_to_url = {executor.submit(self.process_page, url): url for url in urls}
             
-            # 合并结果
-            for result in results:
-                if result:  # 确保结果不是None或空列表
-                    new_urls.extend(result)
+            # 收集结果
+            for future in future_to_url:
+                if self.stop_requested:
+                    # 取消所有未完成的任务
+                    for f in future_to_url:
+                        if not f.done():
+                            f.cancel()
+                    self.logger.info("爬虫已停止，取消所有未完成的任务")
+                    break
+                    
+                try:
+                    result = future.result()
+                    if result:  # 确保结果不是None或空列表
+                        new_urls.extend(result)
+                except Exception as e:
+                    self.logger.error(f"处理任务时出错: {e}")
             
             # 去重
             new_urls = list(set(new_urls) - self.urls_taken)
         
         return new_urls
     
+    def stop(self):
+        """停止爬虫进程"""
+        self.logger.info("收到停止请求，爬虫将在当前批次处理完成后停止...")
+        self.stop_requested = True
+        
+        # 记录停止事件
+        self.write_progress('crawl_stopped', {
+            'current_pages': self.page_count,
+            'max_pages': self.max_pages,
+            'progress_percentage': round((self.page_count / self.max_pages) * 100, 2),
+            'status': 'stopped',
+            'reason': 'user_requested'
+        })
+        
+        return True
+    
+    def save_resume_state(self, current_urls, current_iteration):
+        """保存当前爬虫状态以便恢复"""
+        # 更新恢复状态
+        self.resume_state = {
+            "pending_urls": list(current_urls),  # 确保可序列化
+            "current_iteration": current_iteration,
+            "page_count": self.page_count,
+            "urls_taken": list(self.urls_taken),  # 确保可序列化
+            "timestamp": datetime.now().isoformat(),
+            "is_paused": True
+        }
+        
+        # 写入文件
+        try:
+            with open(self.resume_state_path, 'w', encoding='utf-8') as f:
+                json.dump(self.resume_state, f, ensure_ascii=False, indent=4)
+            self.logger.info(f"已保存恢复状态到: {self.resume_state_path}")
+            return True
+        except Exception as e:
+            self.logger.error(f"保存恢复状态失败: {e}")
+            return False
+    
+    def load_resume_state(self):
+        """加载恢复状态"""
+        if not os.path.exists(self.resume_state_path):
+            self.logger.info("没有找到恢复状态文件")
+            return False
+        
+        try:
+            with open(self.resume_state_path, 'r', encoding='utf-8') as f:
+                self.resume_state = json.load(f)
+            
+            # 恢复状态
+            self.urls_taken = set(self.resume_state.get("urls_taken", []))
+            self.page_count = self.resume_state.get("page_count", 0)
+            
+            self.logger.info(f"已加载恢复状态，继续处理 {len(self.resume_state.get('pending_urls', []))} 个URL，当前页面计数: {self.page_count}")
+            return True
+        except Exception as e:
+            self.logger.error(f"加载恢复状态失败: {e}")
+            return False
+    
+    def resume(self):
+        """恢复爬虫进程"""
+        # 重置停止标志
+        self.stop_requested = False
+        
+        # 尝试加载恢复状态
+        if not self.load_resume_state() or not self.resume_state.get("is_paused", False):
+            self.logger.warning("没有可恢复的爬虫状态，将重新开始爬取")
+            return self.crawl()
+        
+        # 恢复爬取
+        self.logger.info("恢复爬取过程...")
+        
+        # 记录恢复事件
+        self.write_progress('crawl_resumed', {
+            'current_pages': self.page_count,
+            'max_pages': self.max_pages,
+            'pending_urls': len(self.resume_state.get("pending_urls", [])),
+            'current_iteration': self.resume_state.get("current_iteration", 0),
+            'status': 'running'
+        })
+        
+        # 继续爬取过程
+        return self._continue_crawl(
+            self.resume_state.get("pending_urls", []),
+            self.resume_state.get("current_iteration", 0)
+        )
+    
+    def initialize(self):
+        """初始化爬虫，重置状态并清理文件"""
+        self.logger.info("初始化爬虫...")
+        
+        # 清理文件
+        self.clean_output_directory()
+        
+        # 重置状态
+        self.reset_state()
+            
+        # 创建必要的目录
+        if not os.path.exists(self.output_dir):
+            os.makedirs(self.output_dir, exist_ok=True)
+        
+        crawler_dir = os.path.dirname(self.progress_log_path)
+        if not os.path.exists(crawler_dir):
+            os.makedirs(crawler_dir, exist_ok=True)
+        
+        # 初始化数据库
+        self.db_path = os.path.join(self.output_dir, 'crawler_data.db')
+        self.db = DatabaseManager(self.db_path)
+        
+        # 初始化PageRank计算器
+        self.pagerank = PageRankCalculator()
+        
+        # 初始化内容提取器
+        self.content_extractor = ContentExtractor()
+        
+        # 初始化编码处理器
+        self.encoding_handler = EncodingHandler()
+        
+        # 加载配置文件
+        if self.config_file:
+            self.load_config(self.config_file)
+        
+        self.logger.info("爬虫初始化完成")
+        return True
+    
+    def reset_state(self):
+        """重置爬虫状态"""
+        self.logger.info("重置爬虫状态...")
+        
+        # 重置URL集合和计数器
+        self.urls_taken = set()
+        self.page_count = 0
+        
+        # 重置停止标志
+        self.stop_requested = False
+        
+        # 重置恢复状态
+        self.resume_state = {
+            "pending_urls": [],
+            "current_iteration": 0,
+            "is_paused": False
+        }
+        
+        # 如果存在恢复状态文件，删除它
+        if os.path.exists(self.resume_state_path):
+            try:
+                os.remove(self.resume_state_path)
+                self.logger.info("已删除恢复状态文件")
+            except Exception as e:
+                self.logger.error(f"删除恢复状态文件时出错: {e}")
+        
+        # 清空进度日志文件
+        if os.path.exists(self.progress_log_path):
+            try:
+                with open(self.progress_log_path, 'w') as f:
+                    f.write('')  # 清空文件内容
+                self.logger.info("已清空进度日志文件")
+            except Exception as e:
+                self.logger.error(f"清空进度日志文件时出错: {e}")
+        
+        self.logger.info("爬虫状态已重置")
+    def clean_output_directory(self):
+        """清除输出目录中的所有文件和数据库"""
+        try:
+            # 关闭数据库连接，以便可以安全删除数据库文件
+            if self.db:
+                self.db.close_all()
+            
+            # 记录开始清理
+            self.logger.info(f"开始清理输出目录: {self.output_dir}")
+            
+            # 检查目录是否存在
+            if os.path.exists(self.output_dir):
+                # 遍历目录中的所有文件并删除
+                for filename in os.listdir(self.output_dir):
+                    file_path = os.path.join(self.output_dir, filename)
+                    try:
+                        if os.path.isfile(file_path):
+                            os.unlink(file_path)
+                            self.logger.debug(f"已删除文件: {file_path}")
+                        elif os.path.isdir(file_path):
+                            shutil.rmtree(file_path)
+                            self.logger.debug(f"已删除目录: {file_path}")
+                    except Exception as e:
+                        self.logger.error(f"删除文件时出错 {file_path}: {e}")
+            
+            self.logger.info("输出目录清理完成")
+            return True
+        except Exception as e:
+            self.logger.error(f"清理输出目录时出错: {e}")
+            return False
+    
+    
     def crawl(self):
         """开始爬取过程"""
+        # 重置停止标志
+        self.stop_requested = False
+        
+        # 初始化爬虫和清理旧数据
+        self.initialize()
+        
+        # 记录开始时间
+        self.start_time = datetime.now()
+        
         self.logger.info(f"开始爬取，起始URL数量: {len(self.start_urls)}")
         self.logger.info(f"最大页面数: {self.max_pages}, 迭代次数: {self.iterations}")
         
-        current_urls = self.start_urls.copy()
+        # 记录爬取开始
+        self.write_progress('crawl_started', {
+            'max_pages': self.max_pages,
+            'current_pages': 0,
+            'pending_urls': len(self.start_urls),
+            'status': 'running'
+        })
+        
+        # 从头开始爬取
+        return self._continue_crawl(self.start_urls.copy(), 0)
+    
+    def _continue_crawl(self, current_urls, start_iteration):
+        """继续爬取过程，从指定的URL列表和迭代次数开始"""
         
         # 迭代爬取
-        for i in range(self.iterations):
+        for i in range(start_iteration, self.iterations):
+            # 检查是否应该停止
+            if self.stop_requested:
+                # 保存当前状态以便恢复
+                self.save_resume_state(current_urls, i)
+                self.logger.info("爬虫已停止，状态已保存")
+                return False
+                
             if not current_urls or self.page_count >= self.max_pages:
                 break
             
@@ -821,17 +1086,54 @@ class WebCrawler:
             new_urls = self.crawl_batch(current_urls)
             
             self.logger.info(f"迭代 {i+1} 完成。总页面数: {self.page_count}, 新URL数量: {len(new_urls)}")
-            
+            # 迭代结束时更新进度
+            self.write_progress('iteration_update', {
+                'iteration': i + 1,
+                'total_iterations': self.iterations,
+                'current_pages': self.page_count,
+                'max_pages': self.max_pages,
+                'pending_urls': len(new_urls),
+                'progress_percentage': round((self.page_count / self.max_pages) * 100, 2),
+                'status': 'running' if self.page_count < self.max_pages else 'near_complete'
+            })
             # 准备下一轮迭代
             current_urls = new_urls[:self.max_pages - self.page_count]
         
-        # 计算并更新PageRank
-        self.update_pagerank()
+        # 如果不是因为停止请求而结束
+        if not self.stop_requested:
+            # 计算并更新PageRank
+            self.update_pagerank()
+            
+            # 记录爬取完成
+            self.write_progress('crawl_completed', {
+                'total_pages': self.page_count,
+                'max_pages': self.max_pages,
+                'duration_seconds': round((datetime.now() - self.start_time).total_seconds(), 2),
+                'status': 'completed'
+            })
+            
+            # 清除恢复状态
+            if os.path.exists(self.resume_state_path):
+                try:
+                    os.remove(self.resume_state_path)
+                    self.logger.info("已清除恢复状态文件")
+                except Exception as e:
+                    self.logger.warning(f"清除恢复状态文件失败: {e}")
+            
+            # 更新恢复状态为未暂停
+            self.resume_state["is_paused"] = False
         
-        self.logger.info(f"爬取完成。总页面数: {self.page_count}")
+        # 计算总耗时
+        end_time = datetime.now()
+        duration = (end_time - self.start_time).total_seconds()
+        
+        self.logger.info(f"爬取{'停止' if self.stop_requested else '完成'}。总页面数: {self.page_count}")
+        self.logger.info(f"总耗时: {duration:.2f} 秒")
         
         # 导出统计数据
         self.export_stats()
+        
+        return not self.stop_requested
     
     def update_pagerank(self):
         """计算并更新PageRank值"""

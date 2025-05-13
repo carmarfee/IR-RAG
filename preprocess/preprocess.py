@@ -50,12 +50,16 @@ class ChineseDocumentPreprocessor:
             return set()
     
     def load_data(self):
-        """从SQLite数据库加载文档数据"""
+        """从SQLite数据库加载文档数据，包括文档ID"""
         try:
             conn = sqlite3.connect(self.db_path)
-            query = "SELECT title, content, publish_time, source FROM pages"
+            # 修改查询，添加id字段
+            query = "SELECT id, title, content, publish_time, source FROM pages"
             df = pd.read_sql_query(query, conn)
             conn.close()
+            
+            # 将id列重命名为doc_id，以便更清晰地表示它是文档的ID
+            df.rename(columns={'id': 'doc_id'}, inplace=True)
             
             logger.info(f"成功从数据库加载数据，共{len(df)}条记录")
             return df
@@ -114,8 +118,28 @@ class ChineseDocumentPreprocessor:
         
         return ' '.join(filtered_words)
     
+    def remove_duplicates(self, df):
+        """
+        移除内容重复的文档，只保留一个副本
+        
+        参数:
+            df (DataFrame): 包含文档数据的DataFrame
+            
+        返回:
+            DataFrame: 去重后的DataFrame
+        """
+        initial_count = len(df)
+        
+        # 对文档内容进行去重，保留第一次出现的记录
+        df_no_duplicates = df.drop_duplicates(subset=['clean_content'], keep='first')
+        
+        duplicate_count = initial_count - len(df_no_duplicates)
+        logger.info(f"移除了{duplicate_count}个重复内容的文档，剩余{len(df_no_duplicates)}个文档")
+        
+        return df_no_duplicates
+    
     def process_data(self):
-        """处理数据：清洗和分词"""
+        """处理数据：清洗、分词和去重"""
         df = self.load_data()
         if df.empty:
             logger.error("没有数据可处理")
@@ -128,6 +152,10 @@ class ChineseDocumentPreprocessor:
         logger.info("开始清洗文本...")
         processed_df['clean_title'] = processed_df['title'].apply(self.clean_text)
         processed_df['clean_content'] = processed_df['content'].apply(self.clean_text)
+        
+        # 去除重复内容的文档
+        logger.info("开始去除重复内容的文档...")
+        processed_df = self.remove_duplicates(processed_df)
         
         # 分词
         logger.info("开始分词...")
@@ -182,7 +210,12 @@ class ChineseDocumentPreprocessor:
         with open(f"{self.output_dir}/tfidf_matrix.pkl", 'wb') as f:
             pickle.dump(self.tfidf_matrix, f)
         
-        logger.info(f"已保存TF-IDF向量化结果至 {self.output_dir}/")
+        # 保存文档ID与TF-IDF矩阵行索引的映射关系
+        doc_ids = self.processed_data['doc_id'].tolist()
+        with open(f"{self.output_dir}/doc_id_mapping.pkl", 'wb') as f:
+            pickle.dump(doc_ids, f)
+        
+        logger.info(f"已保存TF-IDF向量化结果及文档ID映射至 {self.output_dir}/")
         
         # 生成并保存特征词汇表
         vocab_df = pd.DataFrame({
@@ -231,7 +264,7 @@ class ChineseDocumentPreprocessor:
             top_words = [(feature_names[idx], weight) for idx, weight in zip(sorted_indices[:10], sorted_weights[:10])]
             
             result = {
-                'document_id': idx,
+                'document_id': doc.doc_id,  # 使用原始doc_id而不是DataFrame索引
                 'title': doc.title,
                 'source': doc.source,
                 'top_words': top_words
@@ -239,7 +272,7 @@ class ChineseDocumentPreprocessor:
             results.append(result)
             
             # 打印结果
-            logger.info(f"文档 {idx} - {doc.title} (来源: {doc.source})")
+            logger.info(f"文档 {doc.doc_id} - {doc.title} (来源: {doc.source})")
             for word, weight in top_words:
                 logger.info(f"  {word}: {weight:.4f}")
             logger.info("-" * 50)
@@ -306,6 +339,18 @@ class ChineseDocumentPreprocessor:
                         f.write(f"  {k}: {v}\n")
                 else:
                     f.write(f"{key}: {value}\n")
+            
+            # 添加去重信息到报告
+            f.write("\n去重信息:\n")
+            try:
+                original_count = self.load_data().shape[0]
+                duplicates_removed = original_count - len(self.processed_data)
+                duplicate_percentage = (duplicates_removed / original_count) * 100 if original_count > 0 else 0
+                f.write(f"  原始文档数: {original_count}\n")
+                f.write(f"  移除重复文档数: {duplicates_removed}\n")
+                f.write(f"  重复率: {duplicate_percentage:.2f}%\n")
+            except Exception as e:
+                f.write(f"  无法计算去重信息: {e}\n")
             
             # 添加时间戳
             f.write(f"\n报告生成时间: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")

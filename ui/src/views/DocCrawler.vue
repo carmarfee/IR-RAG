@@ -1,5 +1,6 @@
 <script setup>
-import { ref, computed, onMounted } from 'vue';
+import { ref, computed, onMounted, onUnmounted } from 'vue';
+import { useRouter } from 'vue-router';
 import {
     VideoPlay,
     VideoPause,
@@ -7,47 +8,37 @@ import {
     Setting,
     Loading,
     Document,
-    Close
+    Delete,
+    Download
 } from '@element-plus/icons-vue';
+import { ElMessage } from 'element-plus';
+import { StartCrawler, StopCrawler, ContinueCrawler } from '@/api/crawler';
 
 // 爬虫状态
 const crawlerStatus = ref('stopped'); // 'stopped', 'running', 'paused'
 const pagesCompleted = ref(0);
-const totalPages = ref(1000);
+const totalPages = ref(0);
 const successCount = ref(0);
 const failureCount = ref(0);
 const pendingCount = ref(0);
 const crawlSpeed = ref(0);
 const currentUrl = ref('');
+const currentTitle = ref('');
 const startTime = ref('');
-const showConfig = ref(false);
+const progressPercentage = ref(0);
+
+const router = useRouter();
+
+// SSE相关
+let eventSource = null;
+let crawlStartTime = null;
 
 // 爬虫日志
-const logs = ref([
-    { timestamp: '2025-05-09 10:15:22', type: 'info', message: '爬虫初始化完成' },
-    { timestamp: '2025-05-09 10:15:23', type: 'info', message: '加载配置文件: config.json' }
-]);
+const logs = ref([]);
 
-// 爬虫配置
-const config = ref({
-    baseUrl: 'https://news.whu.edu.cn/',
-    maxPages: 10000,
-    maxDepth: 8,
-    delay: 2.0,
-    concurrency: 5,
-    timeout: 20,
-    randomDelay: true,
-    respectRobotsTxt: true,
-    allowSubdomains: true,
-    saveRawHtml: true,
-    encoding: 'utf-8'
-});
+//-------------------------------方法和计算属性--------------------------------
 
 // 计算属性
-const progressPercentage = computed(() => {
-    return Math.round((pagesCompleted.value / totalPages.value) * 100);
-});
-
 const crawlerStatusText = computed(() => {
     switch (crawlerStatus.value) {
         case 'running': return '爬虫运行中';
@@ -69,9 +60,26 @@ const statusTagType = computed(() => {
 const progressStatus = computed(() => {
     if (crawlerStatus.value === 'running') return 'success';
     if (crawlerStatus.value === 'paused') return 'warning';
-    if (pagesCompleted.value >= totalPages.value) return 'success';
+    if (progressPercentage.value >= 100) return 'success';
     return '';
 });
+
+// 计算爬取速度
+const calculateCrawlSpeed = () => {
+    if (!crawlStartTime || pagesCompleted.value === 0) {
+        crawlSpeed.value = 0;
+        return;
+    }
+
+    const now = Date.now();
+    const elapsedMinutes = (now - crawlStartTime) / 60000;
+
+    if (elapsedMinutes > 0) {
+        crawlSpeed.value = Math.round(pagesCompleted.value / elapsedMinutes);
+    } else {
+        crawlSpeed.value = 0;
+    }
+};
 
 // 方法
 const logTagType = (type) => {
@@ -84,51 +92,292 @@ const logTagType = (type) => {
     }
 };
 
-const startCrawler = () => {
-    crawlerStatus.value = 'running';
-    startTime.value = new Date().toLocaleString();
-    pagesCompleted.value = 0;
-    successCount.value = 0;
-    failureCount.value = 0;
-    pendingCount.value = totalPages.value;
-    crawlSpeed.value = 0;
+// 连接到进度更新
+const connectToProgress = () => {
+    // 关闭旧的连接
+    if (eventSource) {
+        eventSource.close();
+    }
 
-    addLog('info', '爬虫开始运行');
-    addLog('info', `基础URL: ${config.value.baseUrl}`);
+    // 创建新的SSE连接
+    eventSource = new EventSource(`http://localhost:8000/crawler/get_progress`);
 
-    // 模拟爬虫进度更新
-    simulateCrawlerProgress();
+    eventSource.onmessage = (event) => {
+        try {
+            const data = JSON.parse(event.data);
+
+            // 处理心跳
+            if (data.type === 'heartbeat') {
+                return;
+            }
+
+            // 根据消息类型更新状态
+            switch (data.type) {
+                case 'crawl_started':
+                    // 爬虫开始，初始化状态
+                    crawlerStatus.value = 'running';
+                    totalPages.value = data.data.max_pages;
+                    pagesCompleted.value = data.data.current_pages;
+                    pendingCount.value = data.data.pending_urls;
+                    crawlStartTime = Date.parse(data.timestamp);
+                    startTime.value = new Date(data.timestamp).toLocaleString();
+
+                    // 重置计数器
+                    successCount.value = 0;
+                    failureCount.value = 0;
+                    crawlSpeed.value = 0;
+                    progressPercentage.value = 0;
+
+                    addLog('info', `爬虫已启动 - 最大页面数: ${data.data.max_pages}, 待处理URL: ${data.data.pending_urls}`);
+                    break;
+
+                case 'progress_update':
+                    // 页面处理进度更新
+                    pagesCompleted.value = data.data.current_pages;
+                    totalPages.value = data.data.max_pages;
+                    progressPercentage.value = data.data.progress_percentage;
+                    successCount.value = data.data.current_pages; // 假设完成的都是成功的
+                    currentUrl.value = data.data.url;
+                    currentTitle.value = data.data.title || '无标题';
+
+                    // 计算爬取速度
+                    calculateCrawlSpeed();
+
+                    addLog('success', `[${progressPercentage.value.toFixed(1)}%] 处理页面: ${data.data.title || data.data.url}`);
+                    break;
+
+                case 'iteration_update':
+                    // 迭代更新
+                    pagesCompleted.value = data.data.current_pages;
+                    totalPages.value = data.data.max_pages;
+                    pendingCount.value = data.data.pending_urls;
+                    progressPercentage.value = data.data.progress_percentage;
+
+                    // 更新爬虫状态
+                    if (data.data.status === 'near_complete') {
+                        addLog('info', `迭代 ${data.data.iteration}/${data.data.total_iterations} - 接近完成，剩余URL: ${data.data.pending_urls}`);
+                    } else {
+                        addLog('info', `迭代 ${data.data.iteration}/${data.data.total_iterations} - 进度: ${progressPercentage.value.toFixed(1)}%, 待处理: ${data.data.pending_urls}`);
+                    }
+
+                    calculateCrawlSpeed();
+                    break;
+
+                case 'crawl_completed':
+                    // 爬取完成
+                    crawlerStatus.value = 'stopped';
+                    pagesCompleted.value = data.data.total_pages;
+                    totalPages.value = data.data.max_pages;
+                    successCount.value = data.data.total_pages;
+                    pendingCount.value = 0;
+                    progressPercentage.value = 100;
+
+                    const duration = data.data.duration_seconds;
+                    const minutes = Math.floor(duration / 60);
+                    const seconds = Math.floor(duration % 60);
+                    const timeStr = minutes > 0 ? `${minutes}分${seconds}秒` : `${seconds}秒`;
+
+                    // 计算平均速度
+                    const avgSpeed = duration > 0 ? (data.data.total_pages / (duration / 60)).toFixed(1) : 0;
+
+                    addLog('success', `爬取完成！总页面: ${data.data.total_pages}, 耗时: ${timeStr}, 平均速度: ${avgSpeed} 页/分钟`);
+
+                    // 显示完成通知
+                    ElMessage.success({
+                        message: `爬取完成！共爬取 ${data.data.total_pages} 个页面`,
+                        duration: 5000
+                    });
+
+                    // 关闭SSE连接
+                    if (eventSource) {
+                        eventSource.close();
+                        eventSource = null;
+                    }
+                    break;
+
+                case 'error':
+                    // 处理错误消息
+                    addLog('error', `错误: ${data.message}`);
+                    ElMessage.error(data.message);
+                    break;
+
+                case 'waiting':
+                    // 等待状态
+                    addLog('info', data.message);
+                    break;
+
+                default:
+                    console.log('未知消息类型:', data.type, data);
+                    addLog('warning', `收到未知消息类型: ${data.type}`);
+            }
+
+        } catch (error) {
+            console.error('解析消息失败:', error);
+            addLog('error', '解析进度消息失败: ' + error.message);
+        }
+    };
+
+    eventSource.onerror = (error) => {
+        console.error('SSE连接错误:', error);
+
+        // 只有在爬虫运行中才显示连接错误
+        if (crawlerStatus.value === 'running') {
+            addLog('error', 'SSE连接断开，3秒后尝试重连...');
+
+            // 关闭当前连接
+            if (eventSource) {
+                eventSource.close();
+                eventSource = null;
+            }
+
+            // 3秒后重连
+            setTimeout(() => {
+                if (crawlerStatus.value === 'running') {
+                    addLog('info', '尝试重新连接SSE...');
+                    connectToProgress();
+                }
+            }, 3000);
+        }
+    };
+
+    eventSource.onopen = () => {
+        addLog('info', 'SSE连接已建立');
+    };
 };
 
-const pauseCrawler = () => {
-    crawlerStatus.value = 'paused';
-    addLog('warning', '爬虫已暂停');
+// 启动爬虫
+const startCrawler = async () => {
+    try {
+        // 重置所有状态
+        pagesCompleted.value = 0;
+        totalPages.value = 0;
+        successCount.value = 0;
+        failureCount.value = 0;
+        pendingCount.value = 0;
+        crawlSpeed.value = 0;
+        progressPercentage.value = 0;
+        currentUrl.value = '';
+        currentTitle.value = '';
+        logs.value = [];
+
+        // 调用后端API启动爬虫
+        const response = await StartCrawler();
+
+        if (response.success || response.info) {
+            const message = response.success || response.info;
+            addLog('info', message);
+            // 连接到SSE进度更新
+            connectToProgress();
+        } else if (response.error) {
+            throw new Error(response.error);
+        }
+
+    } catch (error) {
+        ElMessage.error('启动爬虫失败: ' + error.message);
+        addLog('error', '启动爬虫失败: ' + error.message);
+        crawlerStatus.value = 'stopped';
+    }
 };
 
-const resumeCrawler = () => {
-    crawlerStatus.value = 'running';
-    addLog('info', '爬虫已恢复运行');
+// 暂停爬虫（实际调用后端API）
+const pauseCrawler = async () => {
+    try {
+        if (!StopCrawler) {
+            // 如果没有停止API，使用模拟暂停
+            crawlerStatus.value = 'paused';
+            addLog('warning', '注意：爬虫暂停功能未实现');
+            return;
+        }
 
-    // 继续模拟进度更新
-    simulateCrawlerProgress();
+        const response = await StopCrawler();
+
+        if (response.success) {
+            crawlerStatus.value = 'paused';
+            addLog('info', response.success);
+        } else if (response.error) {
+            throw new Error(response.error);
+        }
+    } catch (error) {
+        ElMessage.error('暂停爬虫失败: ' + error.message);
+        addLog('error', '暂停爬虫失败: ' + error.message);
+    }
 };
 
-const stopCrawler = () => {
-    crawlerStatus.value = 'stopped';
-    addLog('error', '爬虫已停止');
+// 恢复爬虫
+const resumeCrawler = async () => {
+    try {
+        if (!ContinueCrawler) {
+            // 如果没有恢复API，使用模拟恢复
+            crawlerStatus.value = 'running';
+            addLog('warning', '注意：爬虫恢复功能未实现');
+            return;
+        }
+
+        const response = await ContinueCrawler();
+
+        if (response.success) {
+            crawlerStatus.value = 'running';
+            addLog('info', response.success);
+            // 重新连接进度
+            connectToProgress();
+        } else if (response.error) {
+            throw new Error(response.error);
+        }
+    } catch (error) {
+        ElMessage.error('恢复爬虫失败: ' + error.message);
+        addLog('error', '恢复爬虫失败: ' + error.message);
+    }
 };
 
-const saveConfig = () => {
-    addLog('success', '配置已保存');
-    showConfig.value = false;
+// 停止爬虫
+const stopCrawler = async () => {
+    try {
+        if (!StopCrawler) {
+            // 如果没有停止API，直接停止
+            crawlerStatus.value = 'stopped';
+            if (eventSource) {
+                eventSource.close();
+                eventSource = null;
+            }
+            addLog('warning', '爬虫已停止（本地）');
+            return;
+        }
+
+        const response = await StopCrawler();
+
+        if (response.success) {
+            crawlerStatus.value = 'stopped';
+            addLog('info', response.success);
+        } else if (response.error) {
+            throw new Error(response.error);
+        }
+
+    } catch (error) {
+        ElMessage.error('停止爬虫失败: ' + error.message);
+        addLog('error', '停止爬虫失败: ' + error.message);
+    } finally {
+        // 关闭SSE连接
+        if (eventSource) {
+            eventSource.close();
+            eventSource = null;
+        }
+    }
 };
 
+// 处理配置跳转
+const handleLink = () => {
+    router.push({
+        path: '/DocCrawler/CrawlerConfig'
+    });
+};
+
+// 添加日志
 const addLog = (type, message) => {
     const timestamp = new Date().toLocaleString();
     logs.value.push({ timestamp, type, message });
 
     // 限制日志数量，保持性能
-    if (logs.value.length > 100) {
+    if (logs.value.length > 200) {
         logs.value.shift();
     }
 
@@ -141,70 +390,45 @@ const addLog = (type, message) => {
     }, 50);
 };
 
+// 清除日志
 const clearLog = () => {
     logs.value = [];
     addLog('info', '日志已清除');
 };
 
+// 导出日志
 const exportLog = () => {
-    addLog('info', '日志导出功能已触发');
-    // 这里可以实现导出日志的逻辑
+    const content = logs.value.map(log =>
+        `${log.timestamp} [${log.type.toUpperCase()}] ${log.message}`
+    ).join('\n');
+
+    const blob = new Blob([content], { type: 'text/plain' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `crawler_logs_${Date.now()}.txt`;
+    a.click();
+    URL.revokeObjectURL(url);
+
+    addLog('info', '日志已导出');
+    ElMessage.success('日志已导出');
 };
 
-// 模拟爬虫进度更新
-const simulateCrawlerProgress = () => {
-    if (crawlerStatus.value !== 'running') return;
-
-    const randomUrls = [
-        'https://news.whu.edu.cn/wdzx/wdyw/123456.htm',
-        'https://news.whu.edu.cn/kydt/987654.htm',
-        'https://news.whu.edu.cn/xywh/bfxy/246810.htm',
-        'https://news.whu.edu.cn/ztbd/135790.htm',
-        'https://news.whu.edu.cn/ljrw/112233.htm'
-    ];
-
-    // 随机更新当前URL
-    currentUrl.value = randomUrls[Math.floor(Math.random() * randomUrls.length)];
-
-    // 随机决定成功或失败
-    const isSuccess = Math.random() > 0.1; // 90%成功率
-
-    if (isSuccess) {
-        successCount.value++;
-        addLog('success', `成功爬取: ${currentUrl.value}`);
-    } else {
-        failureCount.value++;
-        addLog('error', `爬取失败: ${currentUrl.value} (超时)`);
-    }
-
-    // 更新进度
-    pagesCompleted.value++;
-    pendingCount.value = totalPages.value - (successCount.value + failureCount.value);
-
-    // 更新爬取速度 (随机模拟)
-    crawlSpeed.value = Math.floor(Math.random() * 20) + 40; // 40-60 页/分钟
-
-    // 如果还没有完成，继续模拟
-    if (pagesCompleted.value < totalPages.value && crawlerStatus.value === 'running') {
-        setTimeout(simulateCrawlerProgress, Math.random() * 1000 + 500); // 0.5-1.5秒的随机间隔
-    } else if (pagesCompleted.value >= totalPages.value) {
-        // 爬虫完成
-        crawlerStatus.value = 'stopped';
-        addLog('success', '爬虫任务完成');
-    }
-};
-
-// 创建一些初始日志
+// 组件挂载时
 onMounted(() => {
-    // 模拟一些初始状态
-    pendingCount.value = totalPages.value;
-
-    // 添加一些初始日志
+    // 添加初始日志
     setTimeout(() => {
-        addLog('info', '检查网络连接...');
-        addLog('info', '网络连接正常');
+        addLog('info', '爬虫控制面板已就绪');
+        addLog('info', '请确保后端服务已启动 (http://localhost:8000)');
         addLog('info', '准备开始爬取，请点击"开始爬取"按钮');
-    }, 1000);
+    }, 500);
+});
+
+// 组件卸载时清理
+onUnmounted(() => {
+    if (eventSource) {
+        eventSource.close();
+    }
 });
 </script>
 
@@ -212,7 +436,7 @@ onMounted(() => {
     <div class="doc-crawler" style="height: 100%;">
         <el-row style="height: 100%;">
             <el-col :span="24" style="display: flex;flex-direction: column;">
-                <el-card style="margin-top: 10px;height: 95%;" header="爬虫窗口">
+                <el-card style="margin-top: 10px;height: 95%;">
                     <!-- 爬虫控制和状态区域 -->
                     <div class="crawler-header">
                         <div class="crawler-status">
@@ -220,31 +444,24 @@ onMounted(() => {
                             <span v-if="startTime" class="crawler-time">开始时间: {{ startTime }}</span>
                         </div>
                         <div class="crawler-controls">
-                            <el-button type="primary" v-if="crawlerStatus !== 'running'" @click="startCrawler">
-                                <el-icon>
-                                    <VideoPlay />
-                                </el-icon> 开始爬取
+                            <el-button type="primary" v-if="crawlerStatus === 'stopped'" @click="startCrawler"
+                                :icon="VideoPlay">
+                                开始爬取
                             </el-button>
-                            <el-button type="warning" v-if="crawlerStatus === 'running'" @click="pauseCrawler">
-                                <el-icon>
-                                    <VideoPause />
-                                </el-icon> 暂停
+                            <el-button type="warning" v-if="crawlerStatus === 'running'" @click="pauseCrawler"
+                                :icon="VideoPause">
+                                暂停
                             </el-button>
-                            <el-button type="primary" v-if="crawlerStatus === 'paused'" @click="resumeCrawler">
-                                <el-icon>
-                                    <VideoPlay />
-                                </el-icon> 恢复
+                            <el-button type="primary" v-if="crawlerStatus === 'paused'" @click="resumeCrawler"
+                                :icon="VideoPlay">
+                                恢复
                             </el-button>
                             <el-button type="danger" v-if="crawlerStatus === 'running' || crawlerStatus === 'paused'"
-                                @click="stopCrawler">
-                                <el-icon>
-                                    <CircleClose />
-                                </el-icon> 停止
+                                @click="stopCrawler" :icon="CircleClose">
+                                停止
                             </el-button>
-                            <el-button type="info" @click="showConfig = !showConfig">
-                                <el-icon>
-                                    <Setting />
-                                </el-icon> 配置
+                            <el-button type="info" @click="handleLink" :icon="Setting">
+                                配置
                             </el-button>
                         </div>
                     </div>
@@ -253,18 +470,28 @@ onMounted(() => {
                     <el-card class="progress-card" shadow="never">
                         <template #header>
                             <div class="progress-header">
-                                <span><el-icon>
+                                <span>
+                                    <el-icon>
                                         <Loading />
-                                    </el-icon> 爬虫进度</span>
+                                    </el-icon> 爬虫进度
+                                </span>
                                 <span>{{ pagesCompleted }} / {{ totalPages }} 页面</span>
                             </div>
                         </template>
+
                         <el-progress :percentage="progressPercentage" :status="progressStatus" :stroke-width="15"
-                            :format="(p) => p + '%'" />
+                            :format="(p) => p.toFixed(1) + '%'" />
 
                         <div class="current-url">
                             <span class="url-label">当前URL:</span>
-                            <el-tag size="small" effect="plain">{{ currentUrl || '尚未开始' }}</el-tag>
+                            <el-tag size="small" effect="plain">
+                                {{ currentUrl || '尚未开始' }}
+                            </el-tag>
+                        </div>
+
+                        <div class="current-title" v-if="currentTitle">
+                            <span class="title-label">页面标题:</span>
+                            <span class="title-text">{{ currentTitle }}</span>
                         </div>
 
                         <el-row :gutter="20" class="stats-row">
@@ -295,99 +522,20 @@ onMounted(() => {
                         </el-row>
                     </el-card>
 
-                    <!-- 爬虫配置区域 -->
-                    <el-collapse-transition>
-                        <el-card v-show="showConfig" class="config-card" shadow="never">
-                            <template #header>
-                                <div class="config-header">
-                                    <span><el-icon>
-                                            <Setting />
-                                        </el-icon> 爬虫配置</span>
-                                    <el-button size="small" text @click="showConfig = false">
-                                        <el-icon>
-                                            <Close />
-                                        </el-icon>
-                                    </el-button>
-                                </div>
-                            </template>
-
-                            <el-form :model="config" label-width="120px" label-position="left">
-                                <el-row :gutter="20">
-                                    <el-col :span="12">
-                                        <el-form-item label="基础URL">
-                                            <el-input v-model="config.baseUrl" placeholder="输入基础URL" />
-                                        </el-form-item>
-                                        <el-form-item label="最大页面数">
-                                            <el-input-number v-model="config.maxPages" :min="1" :max="100000" />
-                                        </el-form-item>
-                                        <el-form-item label="爬取深度">
-                                            <el-input-number v-model="config.maxDepth" :min="1" :max="20" />
-                                        </el-form-item>
-                                    </el-col>
-                                    <el-col :span="12">
-                                        <el-form-item label="请求间隔 (秒)">
-                                            <el-input-number v-model="config.delay" :min="0.1" :max="10" :step="0.1" />
-                                        </el-form-item>
-                                        <el-form-item label="并发请求数">
-                                            <el-input-number v-model="config.concurrency" :min="1" :max="20" />
-                                        </el-form-item>
-                                        <el-form-item label="超时时间 (秒)">
-                                            <el-input-number v-model="config.timeout" :min="1" :max="60" />
-                                        </el-form-item>
-                                    </el-col>
-                                </el-row>
-
-                                <el-divider />
-
-                                <el-row :gutter="20">
-                                    <el-col :span="12">
-                                        <el-form-item label="随机延迟">
-                                            <el-switch v-model="config.randomDelay" />
-                                        </el-form-item>
-                                        <el-form-item label="遵循robots.txt">
-                                            <el-switch v-model="config.respectRobotsTxt" />
-                                        </el-form-item>
-                                    </el-col>
-                                    <el-col :span="12">
-                                        <el-form-item label="允许子域名">
-                                            <el-switch v-model="config.allowSubdomains" />
-                                        </el-form-item>
-                                        <el-form-item label="保存原始HTML">
-                                            <el-switch v-model="config.saveRawHtml" />
-                                        </el-form-item>
-                                    </el-col>
-                                </el-row>
-
-                                <el-form-item label="编码设置">
-                                    <el-select v-model="config.encoding" placeholder="选择编码">
-                                        <el-option label="UTF-8" value="utf-8" />
-                                        <el-option label="GB18030" value="gb18030" />
-                                        <el-option label="GBK" value="gbk" />
-                                        <el-option label="GB2312" value="gb2312" />
-                                        <el-option label="Big5" value="big5" />
-                                    </el-select>
-                                </el-form-item>
-
-                                <el-form-item>
-                                    <el-button type="primary" @click="saveConfig">保存配置</el-button>
-                                    <el-button @click="showConfig = false">取消</el-button>
-                                </el-form-item>
-                            </el-form>
-                        </el-card>
-                    </el-collapse-transition>
-
                     <!-- 爬虫日志区域 -->
                     <el-card class="log-card" shadow="never">
                         <template #header>
                             <div class="log-header">
-                                <span><el-icon>
+                                <span>
+                                    <el-icon>
                                         <Document />
-                                    </el-icon> 爬虫日志</span>
+                                    </el-icon> 爬虫日志
+                                </span>
                                 <div>
-                                    <el-button size="small" @click="clearLog" icon="Delete">
+                                    <el-button size="small" @click="clearLog" :icon="Delete">
                                         清除
                                     </el-button>
-                                    <el-button size="small" @click="exportLog" icon="Download">
+                                    <el-button size="small" @click="exportLog" :icon="Download">
                                         导出
                                     </el-button>
                                 </div>
@@ -395,7 +543,7 @@ onMounted(() => {
                         </template>
 
                         <div class="log-container">
-                            <div v-for="(log, index) in logs" :key="index" class="log-entry" :class="'log-' + log.type">
+                            <div v-for="(log, index) in logs" :key="index" class="log-entry" :class="'log-' + log.type" style="text-align: left;font-size: small;">
                                 <span class="log-timestamp">{{ log.timestamp }}</span>
                                 <el-tag size="small" :type="logTagType(log.type)" effect="dark" class="log-tag">
                                     {{ log.type.toUpperCase() }}
@@ -416,6 +564,8 @@ onMounted(() => {
     justify-content: space-between;
     align-items: center;
     margin-bottom: 20px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid #EBEEF5;
 }
 
 .crawler-status {
@@ -435,7 +585,6 @@ onMounted(() => {
 }
 
 .progress-card,
-.config-card,
 .log-card {
     margin-bottom: 20px;
 }
@@ -458,6 +607,31 @@ onMounted(() => {
     color: #606266;
 }
 
+.current-url .el-tag {
+    max-width: 400px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.current-title {
+    margin-top: 10px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.title-label {
+    font-size: 14px;
+    color: #606266;
+    min-width: 60px;
+}
+
+.title-text {
+    font-size: 14px;
+    color: #303133;
+}
+
 .stats-row {
     margin-top: 20px;
 }
@@ -465,10 +639,15 @@ onMounted(() => {
 .stat-card {
     text-align: center;
     padding: 10px;
+    transition: transform 0.3s;
+}
+
+.stat-card:hover {
+    transform: translateY(-2px);
 }
 
 .stat-value {
-    font-size: 24px;
+    font-size: 28px;
     font-weight: bold;
     margin-bottom: 5px;
 }
@@ -494,12 +673,6 @@ onMounted(() => {
     color: #409eff;
 }
 
-.config-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
-
 .log-header {
     display: flex;
     justify-content: space-between;
@@ -517,12 +690,13 @@ onMounted(() => {
 
 .log-entry {
     margin-bottom: 5px;
-    padding: 5px;
+    padding: 5px 8px;
     border-radius: 2px;
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 10px;
     color: #e0e0e0;
+    transition: background-color 0.2s;
 }
 
 .log-entry:hover {
@@ -532,15 +706,17 @@ onMounted(() => {
 .log-timestamp {
     color: #909399;
     font-size: 12px;
+    min-width: 140px;
 }
 
 .log-tag {
-    min-width: 52px;
+    min-width: 60px;
     text-align: center;
 }
 
 .log-message {
     flex: 1;
+    word-wrap: break-word;
 }
 
 .log-info {
@@ -557,5 +733,41 @@ onMounted(() => {
 
 .log-error {
     border-left: 3px solid #f56c6c;
+}
+
+/* 滚动条样式 */
+.log-container::-webkit-scrollbar {
+    width: 8px;
+}
+
+.log-container::-webkit-scrollbar-track {
+    background: #2d2d2d;
+    border-radius: 4px;
+}
+
+.log-container::-webkit-scrollbar-thumb {
+    background: #555;
+    border-radius: 4px;
+}
+
+.log-container::-webkit-scrollbar-thumb:hover {
+    background: #777;
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+    .crawler-header {
+        flex-direction: column;
+        gap: 15px;
+        align-items: flex-start;
+    }
+
+    .crawler-controls {
+        flex-wrap: wrap;
+    }
+
+    .stats-row .el-col {
+        margin-bottom: 10px;
+    }
 }
 </style>

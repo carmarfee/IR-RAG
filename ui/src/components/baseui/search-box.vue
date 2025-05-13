@@ -47,8 +47,9 @@
 
 <template>
     <div class="input-container">
-        <input type="text" name="text" class="input" placeholder="search...">
-        <span class="icon">
+        <input type="text" name="text" class="input" placeholder="search..." v-model="searchQuery"
+            @keyup.enter="handleSearch">
+        <button class="icon" style="background-color: transparent;border: none;" @click="handleSearch">
             <svg width="19px" height="19px" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <g id="SVGRepo_bgCarrier" stroke-width="0"></g>
                 <g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g>
@@ -63,6 +64,26 @@
                         stroke-linejoin="round"></path>
                 </g>
             </svg>
-        </span>
+        </button>
+
     </div>
 </template>
+
+<script lang="ts" setup>
+import { ref } from 'vue';
+import { useSearchStore } from '../../stores/searchStore';
+import { RecordHistory } from '../../api/history';
+
+
+const searchStore = useSearchStore();
+const searchQuery = ref(searchStore.query);
+//-------------------------------分割线--------------------------------
+const handleSearch = async () => {
+    if (!searchQuery.value.trim()) return;
+    await searchStore.search(searchQuery.value);
+    // 记录搜索历史
+    const currentTime = new Date().toISOString();
+    await RecordHistory(searchQuery.value, currentTime, searchStore.results.length);
+};
+
+</script>

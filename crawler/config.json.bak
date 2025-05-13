@@ -1,0 +1,128 @@
+{
+    "base_url": "https://news.whu.edu.cn/",
+    "start_urls": [
+        "https://news.whu.edu.cn/",
+        "https://news.whu.edu.cn/wdzx/wdyw.htm",
+        "https://news.whu.edu.cn/wdzx/zhxw.htm",
+        "https://news.whu.edu.cn/wdzx/hzjl.htm",
+        "https://news.whu.edu.cn/wdzx/yxcz.htm",
+        "https://news.whu.edu.cn/kydt.htm",
+        "https://news.whu.edu.cn/xywh/bfxy.htm",
+        "https://news.whu.edu.cn/ztbd.htm",
+        "https: //news.whu.edu.cn/mtwd.htm",
+        "https://news.whu.edu.cn/ljrw.htm",
+        "https://news.whu.edu.cn/stkj/ljyx.htm"
+    ],
+    "max_pages": 100,
+    "iterations": 10,
+    "timeout": 20,
+    "encoding_settings": {
+        "default_encoding": "utf-8",
+        "fallback_encodings": [
+            "gb18030",
+            "gbk",
+            "gb2312",
+            "big5"
+        ],
+        "detect_encoding": true,
+        "force_encoding": null,
+        "store_encoding": "utf-8",
+        "use_meta_charset": true,
+        "verify_content": true,
+        "fix_broken_html": true
+    },
+    "headers": {
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/101.0.4951.67 Safari/537.36",
+        "Accept-Language": "zh-CN,zh;q=0.9,en;q=0.8",
+        "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9",
+        "Connection": "keep-alive",
+        "Cache-Control": "max-age=0",
+        "Upgrade-Insecure-Requests": "1",
+        "Referer": "https://www.whu.edu.cn/"
+    },
+    "download_types": [
+        "pdf",
+        "doc",
+        "docx",
+        "ppt",
+        "pptx",
+        "xls",
+        "xlsx",
+        "txt",
+        "zip",
+        "rar"
+    ],
+    "exclude_patterns": [
+        "/login",
+        "/logout",
+        "/search",
+        "javascript:",
+        "mailto:",
+        "/comment",
+        "/submit",
+        "/help/",
+        "javascript:void",
+        "rss",
+        "/404.html",
+        "/old/",
+        "/en/",
+        "/print/",
+        "/_redirect/"
+    ],
+    "domain_specific_encodings": {
+        "www.whu.edu.cn": "utf-8"
+    },
+    "content_extraction": {
+        "title_selectors": [
+            "div.arc-tit h1"
+        ],
+        "content_selectors": [
+            "div.arc-con"
+        ],
+        "time_selectors": [
+            "div.arc-info span:nth-of-type(1)"
+        ],
+        "source_selectors": [
+            "div.arc-info span:nth-of-type(2)"
+        ],
+        "remove_selectors": [
+            "div.share",
+            "div.pageBtn",
+            "div.bot_tools",
+            "div.print",
+            "div.function",
+            "div.tools",
+            "script",
+            "style"
+        ]
+    },
+    "crawl_settings": {
+        "delay_between_requests": 2.0,
+        "max_concurrent_requests": 5,
+        "follow_redirects": true,
+        "max_redirects": 3,
+        "retry_times": 3,
+        "retry_delay": 5,
+        "respect_robots_txt": true,
+        "max_depth": 8,
+        "allow_subdomains": true,
+        "random_delay": true,
+        "delay_variance": 0.5
+    },
+    "storage_settings": {
+        "enable_compression": true,
+        "save_raw_html": true,
+        "save_screenshots": false,
+        "backup_interval": 500,
+        "checkpoint_interval": 1000
+    },
+    "user_agent_list": [
+        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/100.0.4896.127 Safari/537.36",
+        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/101.0.4951.67 Safari/537.36",
+        "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.4 Safari/605.1.15",
+        "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:100.0) Gecko/20100101 Firefox/100.0",
+        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/100.0.4896.127 Safari/537.36 Edg/100.0.1185.50",
+        "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/100.0.4896.127 Safari/537.36",
+        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/99.0.4844.84 Safari/537.36 OPR/85.0.4341.75"
+    ]
+}

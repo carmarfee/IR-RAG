@@ -10,6 +10,11 @@ const routes = [
         component: DocSearch,
     },
     {
+        path: '/SnapShot',
+        name: '文档快照',
+        component: () => import('@/views/SnapShot.vue'),
+    },
+    {
         path: '/History', 
         name: '搜索记录', 
         component: () => import('@/views/History.vue'),
@@ -20,6 +25,11 @@ const routes = [
         component: () => import('@/views/DocCrawler.vue'),
     },
     {
+        path: '/DocCrawler/CrawlerConfig',
+        name: '爬虫配置',
+        component: () => import('@/views/CrawlerConfig.vue'),
+    },
+    {
         path: '/DocPrepare', 
         name: '文档处理', 
         component: () => import('@/views/DocPrepare.vue'),
@@ -28,7 +38,8 @@ const routes = [
         path: '/Setting',
         name: '系统设置',
         component: () => import('@/views/Setting.vue'),
-    }
+    },
+    
 
 ]
 

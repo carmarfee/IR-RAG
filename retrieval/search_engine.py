@@ -51,7 +51,12 @@ class SearchEngine:
             doc_meta_file = os.path.join(self.index_dir, "document_metadata.csv")
             if os.path.exists(doc_meta_file):
                 try:
-                    self.document_metadata = pd.read_csv(doc_meta_file, encoding='utf-8', index_col=0)
+                    # 修改: 确保将doc_id列设置为索引
+                    self.document_metadata = pd.read_csv(doc_meta_file, encoding='utf-8')
+                    # 检查是否有doc_id列，如果有，将其设为索引
+                    if 'doc_id' in self.document_metadata.columns:
+                        self.document_metadata.set_index('doc_id', inplace=True)
+                    logger.info(f"成功加载文档元数据，包含{len(self.document_metadata)}行")
                 except Exception as e:
                     logger.warning(f"加载文档元数据失败: {e}，将使用简化结果展示")
             
@@ -143,16 +148,17 @@ class SearchEngine:
                 'matched_terms': matched_terms
             }
             
-            # 添加文档元数据
+            # 修改: 添加文档元数据 - 通过doc_id查找元数据，而不是通过位置索引
             if self.document_metadata is not None:
                 try:
-                    if doc_id < len(self.document_metadata):
-                        if 'title' in self.document_metadata.columns:
-                            result['title'] = self.document_metadata.iloc[doc_id]['title']
-                        if 'source' in self.document_metadata.columns:
-                            result['source'] = self.document_metadata.iloc[doc_id]['source']
-                        if 'publish_time' in self.document_metadata.columns:
-                            result['publish_time'] = self.document_metadata.iloc[doc_id]['publish_time']
+                    # 直接使用doc_id查找对应的行
+                    if doc_id in self.document_metadata.index:
+                        doc_data = self.document_metadata.loc[doc_id]
+                        # 遍历元数据所有列
+                        for col in self.document_metadata.columns:
+                            result[col] = doc_data[col]
+                    else:
+                        logger.warning(f"在元数据中找不到文档ID {doc_id}")
                 except Exception as e:
                     logger.warning(f"获取文档{doc_id}元数据失败: {e}")
             
@@ -234,21 +240,21 @@ class SearchEngine:
             print(f"无法获取文档{doc_id}的详细信息，元数据不可用")
             return
             
-        try:    
-            if doc_id >= len(self.document_metadata):
-                print(f"无法获取文档{doc_id}的详细信息，文档ID超出范围")
-                return
-            
-            doc = self.document_metadata.iloc[doc_id]
-            print("\n" + "="*60)
-            print(f"文档详情 (ID: {doc_id})")
-            print("="*60)
-            
-            # 显示文档元数据
-            for col in self.document_metadata.columns:
-                print(f"{col}: {doc[col]}")
-            
-            print("="*60)
+        try:
+            # 修改: 使用索引查找而不是位置查找
+            if doc_id in self.document_metadata.index:
+                doc = self.document_metadata.loc[doc_id]
+                print("\n" + "="*60)
+                print(f"文档详情 (ID: {doc_id})")
+                print("="*60)
+                
+                # 显示文档元数据
+                for col in self.document_metadata.columns:
+                    print(f"{col}: {doc[col]}")
+                
+                print("="*60)
+            else:
+                print(f"无法获取文档{doc_id}的详细信息，文档ID不在元数据中")
         except Exception as e:
             print(f"获取文档详情时发生错误: {e}")
         
