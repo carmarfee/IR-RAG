@@ -1,0 +1,500 @@
+{
+    "file:///c%3A/Users/lenovo/Desktop/IR/__init__.py": {
+        "language": "Python",
+        "code": 0,
+        "comment": 0,
+        "blank": 1
+    },
+    "file:///c%3A/Users/lenovo/Desktop/IR/run.py": {
+        "language": "Python",
+        "code": 3,
+        "comment": 0,
+        "blank": 1
+    },
+    "file:///c%3A/Users/lenovo/Desktop/IR/ui/vite.config.ts": {
+        "language": "TypeScript",
+        "code": 27,
+        "comment": 1,
+        "blank": 3
+    },
+    "file:///c%3A/Users/lenovo/Desktop/IR/retrieval/__init__.py": {
+        "language": "Python",
+        "code": 1,
+        "comment": 0,
+        "blank": 0
+    },
+    "file:///c%3A/Users/lenovo/Desktop/IR/ui/tsconfig.node.json": {
+        "language": "JSON",
+        "code": 20,
+        "comment": 2,
+        "blank": 3
+    },
+    "file:///c%3A/Users/lenovo/Desktop/IR/ui/tsconfig.app.json": {
+        "language": "JSON",
+        "code": 16,
+        "comment": 1,
+        "blank": 0
+    },
+    "file:///c%3A/Users/lenovo/Desktop/IR/retrieval/search_engine.py": {
+        "language": "Python",
+        "code": 227,
+        "comment": 29,
+        "blank": 54
+    },
+    "file:///c%3A/Users/lenovo/Desktop/IR/ui/tsconfig.json": {
+        "language": "JSON with Comments",
+        "code": 7,
+        "comment": 0,
+        "blank": 1
+    },
+    "file:///c%3A/Users/lenovo/Desktop/IR/ui/public/vite.svg": {
+        "language": "XML",
+        "code": 1,
+        "comment": 0,
+        "blank": 0
+    },
+    "file:///c%3A/Users/lenovo/Desktop/IR/ui/src/main.ts": {
+        "language": "TypeScript",
+        "code": 12,
+        "comment": 0,
+        "blank": 3
+    },
+    "file:///c%3A/Users/lenovo/Desktop/IR/ui/README.md": {
+        "language": "Markdown",
+        "code": 3,
+        "comment": 0,
+        "blank": 3
+    },
+    "file:///c%3A/Users/lenovo/Desktop/IR/ui/src/style.css": {
+        "language": "CSS",
+        "code": 41,
+        "comment": 2,
+        "blank": 8
+    },
+    "file:///c%3A/Users/lenovo/Desktop/IR/ui/src/stores/themeStore.ts": {
+        "language": "TypeScript",
+        "code": 77,
+        "comment": 2,
+        "blank": 9
+    },
+    "file:///c%3A/Users/lenovo/Desktop/IR/ui/src/App.vue": {
+        "language": "Vue",
+        "code": 164,
+        "comment": 0,
+        "blank": 25
+    },
+    "file:///c%3A/Users/lenovo/Desktop/IR/ui/src/stores/searchStore.ts": {
+        "language": "TypeScript",
+        "code": 36,
+        "comment": 1,
+        "blank": 3
+    },
+    "file:///c%3A/Users/lenovo/Desktop/IR/ui/src/vite-env.d.ts": {
+        "language": "TypeScript",
+        "code": 5,
+        "comment": 2,
+        "blank": 0
+    },
+    "file:///c%3A/Users/lenovo/Desktop/IR/ui/src/views/SnapShot.vue": {
+        "language": "Vue",
+        "code": 80,
+        "comment": 0,
+        "blank": 16
+    },
+    "file:///c%3A/Users/lenovo/Desktop/IR/retrieval/readme.md": {
+        "language": "Markdown",
+        "code": 1,
+        "comment": 0,
+        "blank": 0
+    },
+    "file:///c%3A/Users/lenovo/Desktop/IR/ui/src/views/Setting.vue": {
+        "language": "Vue",
+        "code": 183,
+        "comment": 1,
+        "blank": 35
+    },
+    "file:///c%3A/Users/lenovo/Desktop/IR/ui/src/views/DocCrawler.vue": {
+        "language": "Vue",
+        "code": 659,
+        "comment": 3,
+        "blank": 111
+    },
+    "file:///c%3A/Users/lenovo/Desktop/IR/ui/src/views/History.vue": {
+        "language": "Vue",
+        "code": 37,
+        "comment": 0,
+        "blank": 5
+    },
+    "file:///c%3A/Users/lenovo/Desktop/IR/ui/package.json": {
+        "language": "JSON",
+        "code": 36,
+        "comment": 0,
+        "blank": 1
+    },
+    "file:///c%3A/Users/lenovo/Desktop/IR/ui/src/views/DocPrepare.vue": {
+        "language": "Vue",
+        "code": 888,
+        "comment": 9,
+        "blank": 109
+    },
+    "file:///c%3A/Users/lenovo/Desktop/IR/ui/electron/preload.js": {
+        "language": "JavaScript",
+        "code": 4,
+        "comment": 1,
+        "blank": 1
+    },
+    "file:///c%3A/Users/lenovo/Desktop/IR/ui/src/views/CrawlerConfig.vue": {
+        "language": "Vue",
+        "code": 832,
+        "comment": 0,
+        "blank": 75
+    },
+    "file:///c%3A/Users/lenovo/Desktop/IR/ui/src/views/DocSearch.vue": {
+        "language": "Vue",
+        "code": 11,
+        "comment": 0,
+        "blank": 1
+    },
+    "file:///c%3A/Users/lenovo/Desktop/IR/ui/index.html": {
+        "language": "HTML",
+        "code": 13,
+        "comment": 0,
+        "blank": 1
+    },
+    "file:///c%3A/Users/lenovo/Desktop/IR/ui/auto-imports.d.ts": {
+        "language": "TypeScript",
+        "code": 3,
+        "comment": 6,
+        "blank": 2
+    },
+    "file:///c%3A/Users/lenovo/Desktop/IR/ui/src/router/index.ts": {
+        "language": "TypeScript",
+        "code": 44,
+        "comment": 1,
+        "blank": 7
+    },
+    "file:///c%3A/Users/lenovo/Desktop/IR/ui/electron/main.js": {
+        "language": "JavaScript",
+        "code": 36,
+        "comment": 0,
+        "blank": 8
+    },
+    "file:///c%3A/Users/lenovo/Desktop/IR/ui/components.d.ts": {
+        "language": "TypeScript",
+        "code": 65,
+        "comment": 6,
+        "blank": 2
+    },
+    "file:///c%3A/Users/lenovo/Desktop/IR/requirements.txt": {
+        "language": "pip requirements",
+        "code": 0,
+        "comment": 0,
+        "blank": 1
+    },
+    "file:///c%3A/Users/lenovo/Desktop/IR/ui/src/api/index.ts": {
+        "language": "TypeScript",
+        "code": 23,
+        "comment": 0,
+        "blank": 3
+    },
+    "file:///c%3A/Users/lenovo/Desktop/IR/ui/src/api/preprocess.ts": {
+        "language": "TypeScript",
+        "code": 23,
+        "comment": 0,
+        "blank": 3
+    },
+    "file:///c%3A/Users/lenovo/Desktop/IR/README.md": {
+        "language": "Markdown",
+        "code": 2,
+        "comment": 0,
+        "blank": 1
+    },
+    "file:///c%3A/Users/lenovo/Desktop/IR/ui/src/components/layouts/header.vue": {
+        "language": "Vue",
+        "code": 11,
+        "comment": 0,
+        "blank": 2
+    },
+    "file:///c%3A/Users/lenovo/Desktop/IR/ui/src/api/RAG.ts": {
+        "language": "TypeScript",
+        "code": 0,
+        "comment": 0,
+        "blank": 1
+    },
+    "file:///c%3A/Users/lenovo/Desktop/IR/ui/src/api/crawler.ts": {
+        "language": "TypeScript",
+        "code": 54,
+        "comment": 0,
+        "blank": 6
+    },
+    "file:///c%3A/Users/lenovo/Desktop/IR/ui/src/components/layouts/footer.vue": {
+        "language": "Vue",
+        "code": 11,
+        "comment": 0,
+        "blank": 1
+    },
+    "file:///c%3A/Users/lenovo/Desktop/IR/preprocess/__init__.py": {
+        "language": "Python",
+        "code": 1,
+        "comment": 0,
+        "blank": 0
+    },
+    "file:///c%3A/Users/lenovo/Desktop/IR/preprocess/config.json": {
+        "language": "JSON with Comments",
+        "code": 7,
+        "comment": 0,
+        "blank": 0
+    },
+    "file:///c%3A/Users/lenovo/Desktop/IR/ui/src/api/history.ts": {
+        "language": "TypeScript",
+        "code": 52,
+        "comment": 0,
+        "blank": 5
+    },
+    "file:///c%3A/Users/lenovo/Desktop/IR/preprocess/preprocess.py": {
+        "language": "Python",
+        "code": 267,
+        "comment": 44,
+        "blank": 81
+    },
+    "file:///c%3A/Users/lenovo/Desktop/IR/ui/src/api/search.ts": {
+        "language": "TypeScript",
+        "code": 26,
+        "comment": 0,
+        "blank": 4
+    },
+    "file:///c%3A/Users/lenovo/Desktop/IR/ui/src/components/baseui/breadcrumb.vue": {
+        "language": "Vue",
+        "code": 44,
+        "comment": 0,
+        "blank": 13
+    },
+    "file:///c%3A/Users/lenovo/Desktop/IR/preprocess/readme.md": {
+        "language": "Markdown",
+        "code": 5,
+        "comment": 0,
+        "blank": 0
+    },
+    "file:///c%3A/Users/lenovo/Desktop/IR/ui/src/components/baseui/tabs.vue": {
+        "language": "Vue",
+        "code": 170,
+        "comment": 1,
+        "blank": 30
+    },
+    "file:///c%3A/Users/lenovo/Desktop/IR/ui/src/components/baseui/github.vue": {
+        "language": "Vue",
+        "code": 37,
+        "comment": 0,
+        "blank": 7
+    },
+    "file:///c%3A/Users/lenovo/Desktop/IR/ui/src/components/baseui/search-history.vue": {
+        "language": "Vue",
+        "code": 452,
+        "comment": 4,
+        "blank": 70
+    },
+    "file:///c%3A/Users/lenovo/Desktop/IR/ui/src/components/baseui/search-box.vue": {
+        "language": "Vue",
+        "code": 77,
+        "comment": 0,
+        "blank": 14
+    },
+    "file:///c%3A/Users/lenovo/Desktop/IR/ui/src/components/baseui/history-box.vue": {
+        "language": "Vue",
+        "code": 76,
+        "comment": 0,
+        "blank": 11
+    },
+    "file:///c%3A/Users/lenovo/Desktop/IR/ui/src/api/settings.ts": {
+        "language": "TypeScript",
+        "code": 0,
+        "comment": 0,
+        "blank": 1
+    },
+    "file:///c%3A/Users/lenovo/Desktop/IR/ui/src/components/baseui/logo.vue": {
+        "language": "Vue",
+        "code": 3,
+        "comment": 0,
+        "blank": 0
+    },
+    "file:///c%3A/Users/lenovo/Desktop/IR/ui/src/components/baseui/resultcard.vue": {
+        "language": "Vue",
+        "code": 127,
+        "comment": 0,
+        "blank": 9
+    },
+    "file:///c%3A/Users/lenovo/Desktop/IR/index/inverted_index.py": {
+        "language": "Python",
+        "code": 369,
+        "comment": 60,
+        "blank": 92
+    },
+    "file:///c%3A/Users/lenovo/Desktop/IR/ui/src/components/baseui/html-viewer.vue": {
+        "language": "Vue",
+        "code": 303,
+        "comment": 0,
+        "blank": 47
+    },
+    "file:///c%3A/Users/lenovo/Desktop/IR/ui/src/assets/css/fonts.css": {
+        "language": "CSS",
+        "code": 9,
+        "comment": 0,
+        "blank": 1
+    },
+    "file:///c%3A/Users/lenovo/Desktop/IR/ui/src/components/baseui/RAG-chat.vue": {
+        "language": "Vue",
+        "code": 479,
+        "comment": 4,
+        "blank": 72
+    },
+    "file:///c%3A/Users/lenovo/Desktop/IR/data/readme.md": {
+        "language": "Markdown",
+        "code": 3,
+        "comment": 0,
+        "blank": 0
+    },
+    "file:///c%3A/Users/lenovo/Desktop/IR/index/readme.md": {
+        "language": "Markdown",
+        "code": 1,
+        "comment": 0,
+        "blank": 0
+    },
+    "file:///c%3A/Users/lenovo/Desktop/IR/index/__init__.py": {
+        "language": "Python",
+        "code": 1,
+        "comment": 0,
+        "blank": 0
+    },
+    "file:///c%3A/Users/lenovo/Desktop/IR/crawler/progress.jsonl": {
+        "language": "JSON Lines",
+        "code": 3,
+        "comment": 0,
+        "blank": 1
+    },
+    "file:///c%3A/Users/lenovo/Desktop/IR/backend/services/preprocess_service.py": {
+        "language": "Python",
+        "code": 30,
+        "comment": 0,
+        "blank": 8
+    },
+    "file:///c%3A/Users/lenovo/Desktop/IR/backend/services/index_service.py": {
+        "language": "Python",
+        "code": 14,
+        "comment": 0,
+        "blank": 5
+    },
+    "file:///c%3A/Users/lenovo/Desktop/IR/ui/src/assets/js/tmp.js": {
+        "language": "JavaScript",
+        "code": 0,
+        "comment": 0,
+        "blank": 1
+    },
+    "file:///c%3A/Users/lenovo/Desktop/IR/crawler/__init__.py": {
+        "language": "Python",
+        "code": 1,
+        "comment": 0,
+        "blank": 0
+    },
+    "file:///c%3A/Users/lenovo/Desktop/IR/backend/services/history_service.py": {
+        "language": "Python",
+        "code": 39,
+        "comment": 0,
+        "blank": 4
+    },
+    "file:///c%3A/Users/lenovo/Desktop/IR/backend/utils/checkfile.py": {
+        "language": "Python",
+        "code": 64,
+        "comment": 9,
+        "blank": 16
+    },
+    "file:///c%3A/Users/lenovo/Desktop/IR/backend/main.py": {
+        "language": "Python",
+        "code": 44,
+        "comment": 4,
+        "blank": 15
+    },
+    "file:///c%3A/Users/lenovo/Desktop/IR/backend/services/search_service.py": {
+        "language": "Python",
+        "code": 27,
+        "comment": 1,
+        "blank": 7
+    },
+    "file:///c%3A/Users/lenovo/Desktop/IR/backend/routers/index.py": {
+        "language": "Python",
+        "code": 22,
+        "comment": 0,
+        "blank": 4
+    },
+    "file:///c%3A/Users/lenovo/Desktop/IR/backend/routers/preprocess.py": {
+        "language": "Python",
+        "code": 17,
+        "comment": 0,
+        "blank": 4
+    },
+    "file:///c%3A/Users/lenovo/Desktop/IR/backend/routers/search.py": {
+        "language": "Python",
+        "code": 14,
+        "comment": 3,
+        "blank": 5
+    },
+    "file:///c%3A/Users/lenovo/Desktop/IR/backend/services/crawler_service.py": {
+        "language": "Python",
+        "code": 155,
+        "comment": 9,
+        "blank": 33
+    },
+    "file:///c%3A/Users/lenovo/Desktop/IR/backend/routers/__init__.py": {
+        "language": "Python",
+        "code": 0,
+        "comment": 0,
+        "blank": 1
+    },
+    "file:///c%3A/Users/lenovo/Desktop/IR/backend/database/init_database.py": {
+        "language": "Python",
+        "code": 19,
+        "comment": 0,
+        "blank": 3
+    },
+    "file:///c%3A/Users/lenovo/Desktop/IR/backend/routers/crawler.py": {
+        "language": "Python",
+        "code": 33,
+        "comment": 0,
+        "blank": 9
+    },
+    "file:///c%3A/Users/lenovo/Desktop/IR/backend/routers/history.py": {
+        "language": "Python",
+        "code": 22,
+        "comment": 3,
+        "blank": 5
+    },
+    "file:///c%3A/Users/lenovo/Desktop/IR/crawler/config.json": {
+        "language": "JSON with Comments",
+        "code": 121,
+        "comment": 0,
+        "blank": 0
+    },
+    "file:///c%3A/Users/lenovo/Desktop/IR/ui/package-lock.json": {
+        "language": "JSON",
+        "code": 7817,
+        "comment": 0,
+        "blank": 1
+    },
+    "file:///c%3A/Users/lenovo/Desktop/IR/backend/core/__init__.py": {
+        "language": "Python",
+        "code": 0,
+        "comment": 0,
+        "blank": 1
+    },
+    "file:///c%3A/Users/lenovo/Desktop/IR/crawler/crawler.py": {
+        "language": "Python",
+        "code": 954,
+        "comment": 164,
+        "blank": 241
+    },
+    "file:///c%3A/Users/lenovo/Desktop/IR/backend/core/db.py": {
+        "language": "Python",
+        "code": 172,
+        "comment": 4,
+        "blank": 41
+    }
+}

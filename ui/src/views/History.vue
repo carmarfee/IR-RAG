@@ -19,24 +19,4 @@ import SearchHistory from '../components/baseui/search-history.vue';
     display: flex;
     flex-direction: column;
 }
-
-.page-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 20px;
-}
-
-.page-title {
-    font-size: 20px;
-    font-weight: 600;
-    color: #333;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-}
-
-.page-title .el-icon {
-    color: #6366f1;
-}
 </style>

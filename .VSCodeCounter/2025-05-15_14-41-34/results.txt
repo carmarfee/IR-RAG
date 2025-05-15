@@ -1,0 +1,147 @@
+Date : 2025-05-15 14:41:34
+Directory : c:\Users\lenovo\Desktop\IR
+Total : 83 files,  15733 codes, 377 comments, 1368 blanks, all 17478 lines
+
+Languages
++--------------------+------------+------------+------------+------------+------------+
+| language           | files      | code       | comment    | blank      | total      |
++--------------------+------------+------------+------------+------------+------------+
+| JSON               |          4 |      7,889 |          3 |          5 |      7,897 |
+| Vue                |         20 |      4,644 |         22 |        653 |      5,319 |
+| Python             |         26 |      2,496 |        330 |        631 |      3,457 |
+| TypeScript         |         15 |        447 |         19 |         52 |        518 |
+| JSON with Comments |          3 |        135 |          0 |          1 |        136 |
+| CSS                |          2 |         50 |          2 |          9 |         61 |
+| JavaScript         |          3 |         40 |          1 |         10 |         51 |
+| Markdown           |          6 |         15 |          0 |          4 |         19 |
+| HTML               |          1 |         13 |          0 |          1 |         14 |
+| JSON Lines         |          1 |          3 |          0 |          1 |          4 |
+| XML                |          1 |          1 |          0 |          0 |          1 |
+| pip requirements   |          1 |          0 |          0 |          1 |          1 |
++--------------------+------------+------------+------------+------------+------------+
+
+Directories
++------------------------------------------------------------------------+------------+------------+------------+------------+------------+
+| path                                                                   | files      | code       | comment    | blank      | total      |
++------------------------------------------------------------------------+------------+------------+------------+------------+------------+
+| .                                                                      |         83 |     15,733 |        377 |      1,368 |     17,478 |
+| . (Files)                                                              |          4 |          5 |          0 |          4 |          9 |
+| backend                                                                |         16 |        672 |         33 |        161 |        866 |
+| backend (Files)                                                        |          1 |         44 |          4 |         15 |         63 |
+| backend\core                                                           |          2 |        172 |          4 |         42 |        218 |
+| backend\database                                                       |          1 |         19 |          0 |          3 |         22 |
+| backend\routers                                                        |          6 |        108 |          6 |         28 |        142 |
+| backend\services                                                       |          5 |        265 |         10 |         57 |        332 |
+| backend\utils                                                          |          1 |         64 |          9 |         16 |         89 |
+| crawler                                                                |          4 |      1,079 |        164 |        242 |      1,485 |
+| data                                                                   |          1 |          3 |          0 |          0 |          3 |
+| index                                                                  |          3 |        371 |         60 |         92 |        523 |
+| preprocess                                                             |          4 |        280 |         44 |         81 |        405 |
+| retrieval                                                              |          3 |        229 |         29 |         54 |        312 |
+| ui                                                                     |         48 |     13,094 |         47 |        734 |     13,875 |
+| ui (Files)                                                             |         10 |      8,007 |         16 |         17 |      8,040 |
+| ui\electron                                                            |          2 |         40 |          1 |          9 |         50 |
+| ui\public                                                              |          1 |          1 |          0 |          0 |          1 |
+| ui\src                                                                 |         35 |      5,046 |         30 |        708 |      5,784 |
+| ui\src (Files)                                                         |          4 |        222 |          4 |         36 |        262 |
+| ui\src\api                                                             |          7 |        178 |          0 |         23 |        201 |
+| ui\src\assets                                                          |          2 |          9 |          0 |          2 |         11 |
+| ui\src\assets\css                                                      |          1 |          9 |          0 |          1 |         10 |
+| ui\src\assets\js                                                       |          1 |          0 |          0 |          1 |          1 |
+| ui\src\components                                                      |         12 |      1,790 |          9 |        276 |      2,075 |
+| ui\src\components\baseui                                               |         10 |      1,768 |          9 |        273 |      2,050 |
+| ui\src\components\layouts                                              |          2 |         22 |          0 |          3 |         25 |
+| ui\src\router                                                          |          1 |         44 |          1 |          7 |         52 |
+| ui\src\stores                                                          |          2 |        113 |          3 |         12 |        128 |
+| ui\src\views                                                           |          7 |      2,690 |         13 |        352 |      3,055 |
++------------------------------------------------------------------------+------------+------------+------------+------------+------------+
+
+Files
++------------------------------------------------------------------------+--------------------+------------+------------+------------+------------+
+| filename                                                               | language           | code       | comment    | blank      | total      |
++------------------------------------------------------------------------+--------------------+------------+------------+------------+------------+
+| c:\Users\lenovo\Desktop\IR\README.md                                   | Markdown           |          2 |          0 |          1 |          3 |
+| c:\Users\lenovo\Desktop\IR\__init__.py                                 | Python             |          0 |          0 |          1 |          1 |
+| c:\Users\lenovo\Desktop\IR\backend\core\__init__.py                    | Python             |          0 |          0 |          1 |          1 |
+| c:\Users\lenovo\Desktop\IR\backend\core\db.py                          | Python             |        172 |          4 |         41 |        217 |
+| c:\Users\lenovo\Desktop\IR\backend\database\init_database.py           | Python             |         19 |          0 |          3 |         22 |
+| c:\Users\lenovo\Desktop\IR\backend\main.py                             | Python             |         44 |          4 |         15 |         63 |
+| c:\Users\lenovo\Desktop\IR\backend\routers\__init__.py                 | Python             |          0 |          0 |          1 |          1 |
+| c:\Users\lenovo\Desktop\IR\backend\routers\crawler.py                  | Python             |         33 |          0 |          9 |         42 |
+| c:\Users\lenovo\Desktop\IR\backend\routers\history.py                  | Python             |         22 |          3 |          5 |         30 |
+| c:\Users\lenovo\Desktop\IR\backend\routers\index.py                    | Python             |         22 |          0 |          4 |         26 |
+| c:\Users\lenovo\Desktop\IR\backend\routers\preprocess.py               | Python             |         17 |          0 |          4 |         21 |
+| c:\Users\lenovo\Desktop\IR\backend\routers\search.py                   | Python             |         14 |          3 |          5 |         22 |
+| c:\Users\lenovo\Desktop\IR\backend\services\crawler_service.py         | Python             |        155 |          9 |         33 |        197 |
+| c:\Users\lenovo\Desktop\IR\backend\services\history_service.py         | Python             |         39 |          0 |          4 |         43 |
+| c:\Users\lenovo\Desktop\IR\backend\services\index_service.py           | Python             |         14 |          0 |          5 |         19 |
+| c:\Users\lenovo\Desktop\IR\backend\services\preprocess_service.py      | Python             |         30 |          0 |          8 |         38 |
+| c:\Users\lenovo\Desktop\IR\backend\services\search_service.py          | Python             |         27 |          1 |          7 |         35 |
+| c:\Users\lenovo\Desktop\IR\backend\utils\checkfile.py                  | Python             |         64 |          9 |         16 |         89 |
+| c:\Users\lenovo\Desktop\IR\crawler\__init__.py                         | Python             |          1 |          0 |          0 |          1 |
+| c:\Users\lenovo\Desktop\IR\crawler\config.json                         | JSON with Comments |        121 |          0 |          0 |        121 |
+| c:\Users\lenovo\Desktop\IR\crawler\crawler.py                          | Python             |        954 |        164 |        241 |      1,359 |
+| c:\Users\lenovo\Desktop\IR\crawler\progress.jsonl                      | JSON Lines         |          3 |          0 |          1 |          4 |
+| c:\Users\lenovo\Desktop\IR\data\readme.md                              | Markdown           |          3 |          0 |          0 |          3 |
+| c:\Users\lenovo\Desktop\IR\index\__init__.py                           | Python             |          1 |          0 |          0 |          1 |
+| c:\Users\lenovo\Desktop\IR\index\inverted_index.py                     | Python             |        369 |         60 |         92 |        521 |
+| c:\Users\lenovo\Desktop\IR\index\readme.md                             | Markdown           |          1 |          0 |          0 |          1 |
+| c:\Users\lenovo\Desktop\IR\preprocess\__init__.py                      | Python             |          1 |          0 |          0 |          1 |
+| c:\Users\lenovo\Desktop\IR\preprocess\config.json                      | JSON with Comments |          7 |          0 |          0 |          7 |
+| c:\Users\lenovo\Desktop\IR\preprocess\preprocess.py                    | Python             |        267 |         44 |         81 |        392 |
+| c:\Users\lenovo\Desktop\IR\preprocess\readme.md                        | Markdown           |          5 |          0 |          0 |          5 |
+| c:\Users\lenovo\Desktop\IR\requirements.txt                            | pip requirements   |          0 |          0 |          1 |          1 |
+| c:\Users\lenovo\Desktop\IR\retrieval\__init__.py                       | Python             |          1 |          0 |          0 |          1 |
+| c:\Users\lenovo\Desktop\IR\retrieval\readme.md                         | Markdown           |          1 |          0 |          0 |          1 |
+| c:\Users\lenovo\Desktop\IR\retrieval\search_engine.py                  | Python             |        227 |         29 |         54 |        310 |
+| c:\Users\lenovo\Desktop\IR\run.py                                      | Python             |          3 |          0 |          1 |          4 |
+| c:\Users\lenovo\Desktop\IR\ui\README.md                                | Markdown           |          3 |          0 |          3 |          6 |
+| c:\Users\lenovo\Desktop\IR\ui\auto-imports.d.ts                        | TypeScript         |          3 |          6 |          2 |         11 |
+| c:\Users\lenovo\Desktop\IR\ui\components.d.ts                          | TypeScript         |         65 |          6 |          2 |         73 |
+| c:\Users\lenovo\Desktop\IR\ui\electron\main.js                         | JavaScript         |         36 |          0 |          8 |         44 |
+| c:\Users\lenovo\Desktop\IR\ui\electron\preload.js                      | JavaScript         |          4 |          1 |          1 |          6 |
+| c:\Users\lenovo\Desktop\IR\ui\index.html                               | HTML               |         13 |          0 |          1 |         14 |
+| c:\Users\lenovo\Desktop\IR\ui\package-lock.json                        | JSON               |      7,817 |          0 |          1 |      7,818 |
+| c:\Users\lenovo\Desktop\IR\ui\package.json                             | JSON               |         36 |          0 |          1 |         37 |
+| c:\Users\lenovo\Desktop\IR\ui\public\vite.svg                          | XML                |          1 |          0 |          0 |          1 |
+| c:\Users\lenovo\Desktop\IR\ui\src\App.vue                              | Vue                |        164 |          0 |         25 |        189 |
+| c:\Users\lenovo\Desktop\IR\ui\src\api\RAG.ts                           | TypeScript         |          0 |          0 |          1 |          1 |
+| c:\Users\lenovo\Desktop\IR\ui\src\api\crawler.ts                       | TypeScript         |         54 |          0 |          6 |         60 |
+| c:\Users\lenovo\Desktop\IR\ui\src\api\history.ts                       | TypeScript         |         52 |          0 |          5 |         57 |
+| c:\Users\lenovo\Desktop\IR\ui\src\api\index.ts                         | TypeScript         |         23 |          0 |          3 |         26 |
+| c:\Users\lenovo\Desktop\IR\ui\src\api\preprocess.ts                    | TypeScript         |         23 |          0 |          3 |         26 |
+| c:\Users\lenovo\Desktop\IR\ui\src\api\search.ts                        | TypeScript         |         26 |          0 |          4 |         30 |
+| c:\Users\lenovo\Desktop\IR\ui\src\api\settings.ts                      | TypeScript         |          0 |          0 |          1 |          1 |
+| c:\Users\lenovo\Desktop\IR\ui\src\assets\css\fonts.css                 | CSS                |          9 |          0 |          1 |         10 |
+| c:\Users\lenovo\Desktop\IR\ui\src\assets\js\tmp.js                     | JavaScript         |          0 |          0 |          1 |          1 |
+| c:\Users\lenovo\Desktop\IR\ui\src\components\baseui\RAG-chat.vue       | Vue                |        479 |          4 |         72 |        555 |
+| c:\Users\lenovo\Desktop\IR\ui\src\components\baseui\breadcrumb.vue     | Vue                |         44 |          0 |         13 |         57 |
+| c:\Users\lenovo\Desktop\IR\ui\src\components\baseui\github.vue         | Vue                |         37 |          0 |          7 |         44 |
+| c:\Users\lenovo\Desktop\IR\ui\src\components\baseui\history-box.vue    | Vue                |         76 |          0 |         11 |         87 |
+| c:\Users\lenovo\Desktop\IR\ui\src\components\baseui\html-viewer.vue    | Vue                |        303 |          0 |         47 |        350 |
+| c:\Users\lenovo\Desktop\IR\ui\src\components\baseui\logo.vue           | Vue                |          3 |          0 |          0 |          3 |
+| c:\Users\lenovo\Desktop\IR\ui\src\components\baseui\resultcard.vue     | Vue                |        127 |          0 |          9 |        136 |
+| c:\Users\lenovo\Desktop\IR\ui\src\components\baseui\search-box.vue     | Vue                |         77 |          0 |         14 |         91 |
+| c:\Users\lenovo\Desktop\IR\ui\src\components\baseui\search-history.vue | Vue                |        452 |          4 |         70 |        526 |
+| c:\Users\lenovo\Desktop\IR\ui\src\components\baseui\tabs.vue           | Vue                |        170 |          1 |         30 |        201 |
+| c:\Users\lenovo\Desktop\IR\ui\src\components\layouts\footer.vue        | Vue                |         11 |          0 |          1 |         12 |
+| c:\Users\lenovo\Desktop\IR\ui\src\components\layouts\header.vue        | Vue                |         11 |          0 |          2 |         13 |
+| c:\Users\lenovo\Desktop\IR\ui\src\main.ts                              | TypeScript         |         12 |          0 |          3 |         15 |
+| c:\Users\lenovo\Desktop\IR\ui\src\router\index.ts                      | TypeScript         |         44 |          1 |          7 |         52 |
+| c:\Users\lenovo\Desktop\IR\ui\src\stores\searchStore.ts                | TypeScript         |         36 |          1 |          3 |         40 |
+| c:\Users\lenovo\Desktop\IR\ui\src\stores\themeStore.ts                 | TypeScript         |         77 |          2 |          9 |         88 |
+| c:\Users\lenovo\Desktop\IR\ui\src\style.css                            | CSS                |         41 |          2 |          8 |         51 |
+| c:\Users\lenovo\Desktop\IR\ui\src\views\CrawlerConfig.vue              | Vue                |        832 |          0 |         75 |        907 |
+| c:\Users\lenovo\Desktop\IR\ui\src\views\DocCrawler.vue                 | Vue                |        659 |          3 |        111 |        773 |
+| c:\Users\lenovo\Desktop\IR\ui\src\views\DocPrepare.vue                 | Vue                |        888 |          9 |        109 |      1,006 |
+| c:\Users\lenovo\Desktop\IR\ui\src\views\DocSearch.vue                  | Vue                |         11 |          0 |          1 |         12 |
+| c:\Users\lenovo\Desktop\IR\ui\src\views\History.vue                    | Vue                |         37 |          0 |          5 |         42 |
+| c:\Users\lenovo\Desktop\IR\ui\src\views\Setting.vue                    | Vue                |        183 |          1 |         35 |        219 |
+| c:\Users\lenovo\Desktop\IR\ui\src\views\SnapShot.vue                   | Vue                |         80 |          0 |         16 |         96 |
+| c:\Users\lenovo\Desktop\IR\ui\src\vite-env.d.ts                        | TypeScript         |          5 |          2 |          0 |          7 |
+| c:\Users\lenovo\Desktop\IR\ui\tsconfig.app.json                        | JSON               |         16 |          1 |          0 |         17 |
+| c:\Users\lenovo\Desktop\IR\ui\tsconfig.json                            | JSON with Comments |          7 |          0 |          1 |          8 |
+| c:\Users\lenovo\Desktop\IR\ui\tsconfig.node.json                       | JSON               |         20 |          2 |          3 |         25 |
+| c:\Users\lenovo\Desktop\IR\ui\vite.config.ts                           | TypeScript         |         27 |          1 |          3 |         31 |
+| Total                                                                  |                    |     15,733 |        377 |      1,368 |     17,478 |
++------------------------------------------------------------------------+--------------------+------------+------------+------------+------------+

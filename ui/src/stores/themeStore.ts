@@ -25,7 +25,7 @@ export const useThemeStore = defineStore('theme', {
         themes: {
             light: {
                 primary: '#F8F8FF',
-                secondary: '#8b5cf6',
+                secondary: '#FCFCFC',
                 background: '#f9fafb',
                 surface: '#ffffff',
                 text: '#111827',
@@ -37,14 +37,14 @@ export const useThemeStore = defineStore('theme', {
             },
             dark: {
                 primary: '#4E4E6A',
-                secondary: '#a78bfa',
+                secondary: '#5d3d7137',
                 background: '#1f2937',
                 surface: '#111827',
                 text: '#f9fafb',
                 sidebar: '#111827',
                 sidebarText: '#d1d5db',
                 sidebarActive: '#4c1d95',
-                border: '#374151',
+                border: '#C3B1E1',
                 icon: '#8b5cf6'
             }
         }

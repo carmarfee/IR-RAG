@@ -21,6 +21,6 @@ async def check_index_file():
 @router.get("/start_inverted_index")
 async def start_inverted_index(optimize,min_tfidf):
     return run_inverted_index(
-        optimize=optimize,
-        min_tfidf=min_tfidf
+        optimize=bool(optimize),
+        min_tfidf=float(min_tfidf)
     )

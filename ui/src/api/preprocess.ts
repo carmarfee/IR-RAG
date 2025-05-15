@@ -2,7 +2,7 @@ import axios from "axios";
 
 const preprocess_api = axios.create({
     baseURL: "http://localhost:8000/preprocess",
-    timeout: 10000,
+    timeout: 50000,
 });
 
 export async function CheckPreprocessFile() {
@@ -15,10 +15,15 @@ export async function CheckPreprocessFile() {
     }
 }
 
-export async function StartPreprocess() {
+export async function StartPreprocess(min_df: any, max_df: any) {
     try {
-        const response = await preprocess_api.get("/start_proprecess");
-        return response.data;  // 返回实际数据而不是整个响应对象
+        const response = await preprocess_api.get("/start_preprocess", {
+            params: {
+                min_df: min_df,
+                max_df: max_df
+            }
+        });
+        return response;
     } catch (error) {
         console.error("StartPreprocess error:", error);
         throw error;  // 重新抛出错误以便调用者处理

@@ -22,15 +22,27 @@ def save_config(config: dict):
     except Exception as e:
         return {'error': f"保存配置文件时出错: {e}"}
     
-def run_proprecess(config:dict):
+def run_preprocess(min_df,max_df):
+    config = {
+        "tfidf_params": {
+            "min_df": min_df,
+            "max_df": max_df
+        },
+        "sample_size": 5
+    }
     save_config(config=config)
     config_path = "preprocess/config.json"
-    def proprecess_task():
-        processor = ChineseDocumentPreprocessor(config_path=config_path)
-        processor.run_full_pipeline()
-    thread = threading.Thread(target=proprecess_task,daemon=True)
-    thread.start()
-    return {'success': '预处理进行中'}
+    processor = ChineseDocumentPreprocessor(config_path=config_path)
+    processor.run_full_pipeline()
+    try:
+        report_path = "data/preprocessed_data/preprocessing_report.json"
+        with open(report_path,'r',encoding='utf-8') as f:
+            report = json.load(f)
+        return report
+    except json.JSONDecodeError:
+        return {'error': '文件格式错误'}
+    except FileNotFoundError:
+        return {'error': '文件未找到'}
     
     
     

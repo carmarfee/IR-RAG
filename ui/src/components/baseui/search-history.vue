@@ -1,92 +1,94 @@
 <template>
     <div class="search-history">
-        <!-- 顶部搜索框 -->
-        <div class="search-header">
-            <div class="search-filters" style="width: 120px;">
-                <el-select v-model="timeRange" placeholder="时间范围" @change="filterRecords">
-                    <el-option label="所有时间" value="all" />
-                    <el-option label="今天" value="today" />
-                    <el-option label="本周" value="week" />
-                    <el-option label="本月" value="month" />
-                </el-select>
+        <el-card>
+            <!-- 顶部搜索框 -->
+            <div class="search-header">
+                <div class="search-filters" style="width: 120px;">
+                    <el-select v-model="timeRange" placeholder="时间范围" @change="filterRecords">
+                        <el-option label="所有时间" value="all" />
+                        <el-option label="今天" value="today" />
+                        <el-option label="本周" value="week" />
+                        <el-option label="本月" value="month" />
+                    </el-select>
+                </div>
+                <div class="search-actions">
+                    <el-button type="danger" plain @click="confirmClearAll" :disabled="searchRecords.length === 0">
+                        <el-icon>
+                            <Delete />
+                        </el-icon>
+                        清空
+                    </el-button>
+                    <el-button type="primary" @click="refreshHistory">
+                        <el-icon>
+                            <RefreshRight />
+                        </el-icon>
+                        刷新
+                    </el-button>
+                </div>
             </div>
-            <div class="search-actions">
-                <el-button type="danger" plain @click="confirmClearAll" :disabled="searchRecords.length === 0">
-                    <el-icon>
-                        <Delete />
-                    </el-icon>
-                    清空
-                </el-button>
-                <el-button type="primary" @click="refreshHistory">
-                    <el-icon>
-                        <RefreshRight />
-                    </el-icon>
-                    刷新
-                </el-button>
-            </div>
-        </div>
 
-        <!-- 历史记录列表 -->
-        <div class="history-list-container">
-            <el-skeleton :loading="loading" animated :rows="5" v-if="loading">
-            </el-skeleton>
+            <!-- 历史记录列表 -->
+            <div class="history-list-container">
+                <el-skeleton :loading="loading" animated :rows="5" v-if="loading">
+                </el-skeleton>
 
-            <div v-else>
-                <div v-if="filteredRecords.length > 0" class="history-list">
-                    <div v-for="(record, index) in paginatedRecords" :key="record.id" class="history-item">
-                        <div class="history-item-content">
-                            <el-icon class="history-icon">
-                                <Clock />
-                            </el-icon>
-                            <div class="history-details">
-                                <div class="history-keyword">{{ record.search_query }}</div>
-                                <div class="history-meta">
-                                    <span class="history-time">{{ formatTime(new Date(record.time)) }}</span>
-                                    <el-tag size="small" effect="plain" type="info">{{ record.num }} 个结果</el-tag>
+                <div v-else>
+                    <div v-if="filteredRecords.length > 0" class="history-list">
+                        <div v-for="(record, index) in paginatedRecords" :key="record.id" class="history-item">
+                            <div class="history-item-content">
+                                <el-icon class="history-icon">
+                                    <Clock />
+                                </el-icon>
+                                <div class="history-details">
+                                    <div class="history-keyword">{{ record.search_query }}</div>
+                                    <div class="history-meta">
+                                        <span class="history-time">{{ formatTime(new Date(record.time)) }}</span>
+                                        <el-tag size="small" effect="plain" type="info">{{ record.num }} 个结果</el-tag>
+                                    </div>
                                 </div>
                             </div>
-                        </div>
-                        <div class="history-actions">
-                            <el-tooltip content="重新搜索" placement="top">
-                                <el-button text type="primary" @click="searchAgain(record.search_query)">
-                                    <el-icon>
-                                        <Search />
-                                    </el-icon>
-                                </el-button>
-                            </el-tooltip>
-                            <el-tooltip content="删除记录" placement="top">
-                                <el-button text type="danger"
-                                    @click="deleteRecord(index + (currentPage - 1) * pageSize)">
-                                    <el-icon>
-                                        <Delete />
-                                    </el-icon>
-                                </el-button>
-                            </el-tooltip>
+                            <div class="history-actions">
+                                <el-tooltip content="重新搜索" placement="top">
+                                    <el-button text type="primary" @click="searchAgain(record.search_query)">
+                                        <el-icon>
+                                            <Search />
+                                        </el-icon>
+                                    </el-button>
+                                </el-tooltip>
+                                <el-tooltip content="删除记录" placement="top">
+                                    <el-button text type="danger"
+                                        @click="deleteRecord(index + (currentPage - 1) * pageSize)">
+                                        <el-icon>
+                                            <Delete />
+                                        </el-icon>
+                                    </el-button>
+                                </el-tooltip>
+                            </div>
                         </div>
                     </div>
-                </div>
-                <div v-else class="empty-state">
-                    <el-empty description="暂无搜索记录" />
-                </div>
+                    <div v-else class="empty-state">
+                        <el-empty description="暂无搜索记录" />
+                    </div>
 
-                <!-- 分页 -->
-                <div class="pagination-container" v-if="totalPages > 1">
-                    <el-pagination background layout="prev, pager, next" :total="filteredRecords.length"
-                        :current-page="currentPage" :page-size="pageSize" @current-change="handlePageChange" />
+                    <!-- 分页 -->
+                    <div class="pagination-container" v-if="totalPages > 1">
+                        <el-pagination background layout="prev, pager, next" :total="filteredRecords.length"
+                            :current-page="currentPage" :page-size="pageSize" @current-change="handlePageChange" />
+                    </div>
                 </div>
             </div>
-        </div>
 
-        <!-- 确认清空的对话框 -->
-        <el-dialog v-model="clearDialogVisible" title="确认清空" width="30%" center>
-            <span>确定要清空所有搜索记录吗？此操作不可恢复。</span>
-            <template #footer>
-                <span class="dialog-footer">
-                    <el-button @click="clearDialogVisible = false">取消</el-button>
-                    <el-button type="danger" @click="clearAllRecords">确定</el-button>
-                </span>
-            </template>
-        </el-dialog>
+            <!-- 确认清空的对话框 -->
+            <el-dialog v-model="clearDialogVisible" title="确认清空" width="30%" center>
+                <span>确定要清空所有搜索记录吗？此操作不可恢复。</span>
+                <template #footer>
+                    <span class="dialog-footer">
+                        <el-button @click="clearDialogVisible = false">取消</el-button>
+                        <el-button type="danger" @click="clearAllRecords">确定</el-button>
+                    </span>
+                </template>
+            </el-dialog>
+        </el-card>
     </div>
 </template>
 
@@ -411,7 +413,8 @@ onMounted(async () => {
     flex: 1;
     display: flex;
     flex-direction: column;
-    background-color: #fff;
+    background-color: var(--secondar-color);
+    border-color: var(--border-color);
     border-radius: 8px;
     box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.05);
     padding: 15px;

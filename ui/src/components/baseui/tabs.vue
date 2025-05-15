@@ -16,7 +16,7 @@
                             <Loading />
                         </el-icon> 加载中...
                     </div>
-                    <div v-if="displayResults.length == 0" class="empty-state">
+                    <div v-if="displayResults.length == 0 && !isLoading" class="empty-state">
                         <el-empty description="输入关键词进行查询" />
                     </div>
                 </div>
@@ -32,7 +32,7 @@
                 </div>
             </div>
         </el-tab-pane>
-        <el-tab-pane label="RAG对话" name="second">
+        <el-tab-pane label="RAG对话" name="second" >
             <RAG></RAG>
         </el-tab-pane>
     </el-tabs>
@@ -120,6 +120,13 @@ const handleClick = (tab: TabsPaneContext, event: Event) => {
     color: #6b778c;
     font-weight: 600;
     padding: 10px;
+}
+.el-tabs__item {
+    color: #9370DB !important;
+}
+
+.el-tabs__active-bar {
+    background-color: #9370DB !important;
 }
 
 .demo-tabs>.el-tabs__content>.el-tab-pane {

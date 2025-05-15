@@ -32,13 +32,13 @@ app = FastAPI(title="IR搜索系统", description="文档搜索与管理API",lif
 from backend.routers import search
 from backend.routers import crawler
 from backend.routers import history
-from backend.routers import proprecess
+from backend.routers import preprocess
 from backend.routers import index
 # 路由聚合
 app.include_router(search.router)
 app.include_router(crawler.router)
 app.include_router(history.router)
-app.include_router(proprecess.router)
+app.include_router(preprocess.router)
 app.include_router(index.router)
 
 # 配置 CORS

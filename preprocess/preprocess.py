@@ -290,13 +290,13 @@ class ChineseDocumentPreprocessor:
             sorted_weights = np.sort(weights)[::-1]
             
             # 获取前10个高权重词语
-            top_words = [(feature_names[idx], weight) for idx, weight in zip(sorted_indices[:10], sorted_weights[:10])]
+            top_words = [(feature_names[idx], float(weight)) for idx, weight in zip(sorted_indices[:10], sorted_weights[:10])]
             
             result = {
                 'document_id': doc.doc_id,  # 使用原始doc_id而不是DataFrame索引
                 'title': doc.title,
                 'source': doc.source,
-                'top_words': top_words
+                'top_words': dict(top_words)
             }
             results.append(result)
             
@@ -306,15 +306,16 @@ class ChineseDocumentPreprocessor:
                 logger.info(f"  {word}: {weight:.4f}")
             logger.info("-" * 50)
         
-        # 保存样例结果
-        with open(f"{self.output_dir}/document_vectors_sample.txt", 'w', encoding='utf-8') as f:
-            for result in results:
-                f.write(f"文档 {result['document_id']} - {result['title']} ({result['source']})\n")
-                for word, weight in result['top_words']:
-                    f.write(f"  {word}: {weight:.4f}\n")
-                f.write("-" * 50 + "\n")
+        # 保存样例结果为JSON格式
+        sample_data = {
+            'document_vectors_sample': results,
+            'generated_at': datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+        }
         
-        logger.info(f"已保存文档向量样例至 {self.output_dir}/document_vectors_sample.txt")
+        with open(f"{self.output_dir}/document_vectors_sample.json", 'w', encoding='utf-8') as f:
+            json.dump(sample_data, f, ensure_ascii=False, indent=2)
+        
+        logger.info(f"已保存文档向量样例至 {self.output_dir}/document_vectors_sample.json")
     
     def run_full_pipeline(self):
         """运行完整的预处理流程"""
@@ -327,60 +328,100 @@ class ChineseDocumentPreprocessor:
         # 2. TF-IDF向量化
         self.vectorize_documents()
         
+        # 3. 生成文档向量样例
+        self.generate_document_vectors_sample()
+        
         end_time = datetime.now()
         processing_time = (end_time - start_time).total_seconds()
         logger.info(f"预处理流程完成，总耗时: {processing_time:.2f}秒")
         
         # 生成处理报告
-        self.generate_report(processing_time)
+        self.generate_report(start_time,processing_time)
     
-    def generate_report(self, processing_time):
-        """生成预处理报告"""
+    def generate_report(self, start_time,processing_time):
+        """生成预处理报告（JSON格式）"""
         if self.processed_data is None:
             logger.error("没有处理数据，无法生成报告")
             return
         
-        report = {
-            "总文档数": len(self.processed_data),
-            "处理耗时(秒)": processing_time,
-            "特征词汇量": len(self.tfidf_vectorizer.get_feature_names_out()) if self.tfidf_vectorizer else 0,
-            "TF-IDF矩阵维度": self.tfidf_matrix.shape if self.tfidf_matrix is not None else (0, 0),
-            "TF-IDF矩阵稀疏度": (1.0 - self.tfidf_matrix.nnz / (self.tfidf_matrix.shape[0] * self.tfidf_matrix.shape[1])) if self.tfidf_matrix is not None else 0,
-            "标题平均长度(字符)": self.processed_data['clean_title'].str.len().mean(),
-            "内容平均长度(字符)": self.processed_data['clean_content'].str.len().mean(),
-            "标题平均分词数": self.processed_data['segmented_title'].str.split().str.len().mean(),
-            "内容平均分词数": self.processed_data['segmented_content'].str.split().str.len().mean()
-        }
-        
-        # 保存报告
-        with open(f"{self.output_dir}/preprocessing_report.txt", 'w', encoding='utf-8') as f:
-            f.write("中文文档预处理报告\n")
-            f.write("=" * 50 + "\n\n")
+        try:
+            # 计算去重信息
+            original_df = self.load_data()
+            original_count = len(original_df) if not original_df.empty else 0
+            duplicates_removed = original_count - len(self.processed_data)
+            duplicate_percentage = (duplicates_removed / original_count) * 100 if original_count > 0 else 0
             
-            for key, value in report.items():
-                if isinstance(value, dict):
-                    f.write(f"{key}:\n")
-                    for k, v in value.items():
-                        f.write(f"  {k}: {v}\n")
-                else:
-                    f.write(f"{key}: {value}\n")
+            # 构建报告数据
+            report = {
+                "document_statistics": {
+                    "total_documents": int(len(self.processed_data)),
+                    "original_documents": int(original_count),
+                    "duplicates_removed": int(duplicates_removed),
+                    "duplicate_percentage": float(duplicate_percentage)
+                },
+                "content_statistics": {
+                    "title_length": {
+                        "mean_chars": float(self.processed_data['clean_title'].str.len().mean()),
+                        "max_chars": int(self.processed_data['clean_title'].str.len().max()),
+                        "min_chars": int(self.processed_data['clean_title'].str.len().min())
+                    },
+                    "content_length": {
+                        "mean_chars": float(self.processed_data['clean_content'].str.len().mean()),
+                        "max_chars": int(self.processed_data['clean_content'].str.len().max()),
+                        "min_chars": int(self.processed_data['clean_content'].str.len().min())
+                    },
+                    "title_words": {
+                        "mean_count": float(self.processed_data['segmented_title'].str.split().str.len().mean()),
+                        "max_count": int(self.processed_data['segmented_title'].str.split().str.len().max()),
+                        "min_count": int(self.processed_data['segmented_title'].str.split().str.len().min())
+                    },
+                    "content_words": {
+                        "mean_count": float(self.processed_data['segmented_content'].str.split().str.len().mean()),
+                        "max_count": int(self.processed_data['segmented_content'].str.split().str.len().max()),
+                        "min_count": int(self.processed_data['segmented_content'].str.split().str.len().min())
+                    }
+                },
+                "vectorization_statistics": {
+                    "vocabulary_size": int(len(self.tfidf_vectorizer.get_feature_names_out())) if self.tfidf_vectorizer else 0,
+                    "tfidf_matrix_shape": {
+                        "rows": int(self.tfidf_matrix.shape[0]) if self.tfidf_matrix is not None else 0,
+                        "columns": int(self.tfidf_matrix.shape[1]) if self.tfidf_matrix is not None else 0
+                    },
+                    "tfidf_matrix_sparsity": float(1.0 - self.tfidf_matrix.nnz / (self.tfidf_matrix.shape[0] * self.tfidf_matrix.shape[1])) if self.tfidf_matrix is not None else 0,
+                    "nonzero_elements": int(self.tfidf_matrix.nnz) if self.tfidf_matrix is not None else 0
+                },
+                "performance_metrics": {
+                    "total_processing_time_seconds": float(processing_time),
+                    "total_processing_time_minutes": float(processing_time / 60),
+                    "processing_start_time": start_time.strftime('%Y-%m-%d %H:%M:%S'),
+                    "processing_end_time": datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+                },
+                "configuration": {
+                    "tfidf_params": self.config.get('tfidf_params', {}),
+                    "sample_size": self.config.get('sample_size', 5),
+                    "stopwords_count": len(self.stopwords)
+                },
+                "output_files": {
+                    "processed_documents": f"{self.output_dir}/processed_documents.csv",
+                    "tfidf_vectorizer": f"{self.output_dir}/tfidf_vectorizer.pkl",
+                    "tfidf_matrix": f"{self.output_dir}/tfidf_matrix.pkl",
+                    "doc_id_mapping": f"{self.output_dir}/doc_id_mapping.pkl",
+                    "feature_vocabulary": f"{self.output_dir}/feature_vocabulary.csv",
+                    "document_vectors_sample": f"{self.output_dir}/document_vectors_sample.json"
+                }
+            }
             
-            # 添加去重信息到报告
-            f.write("\n去重信息:\n")
-            try:
-                original_count = self.load_data().shape[0]
-                duplicates_removed = original_count - len(self.processed_data)
-                duplicate_percentage = (duplicates_removed / original_count) * 100 if original_count > 0 else 0
-                f.write(f"  原始文档数: {original_count}\n")
-                f.write(f"  移除重复文档数: {duplicates_removed}\n")
-                f.write(f"  重复率: {duplicate_percentage:.2f}%\n")
-            except Exception as e:
-                f.write(f"  无法计算去重信息: {e}\n")
+            # 保存JSON报告
+            report_path = f"{self.output_dir}/preprocessing_report.json"
+            with open(report_path, 'w', encoding='utf-8') as f:
+                json.dump(report, f, ensure_ascii=False, indent=2)
             
-            # 添加时间戳
-            f.write(f"\n报告生成时间: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
-        
-        logger.info(f"已生成预处理报告至 {self.output_dir}/preprocessing_report.txt")
+            logger.info(f"已生成JSON格式预处理报告至 {report_path}")
+            
+        except Exception as e:
+            logger.error(f"生成报告时出错: {e}")
+            import traceback
+            logger.error(traceback.format_exc())
 
 
 if __name__ == "__main__":

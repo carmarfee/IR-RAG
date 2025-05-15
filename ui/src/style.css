@@ -7,6 +7,7 @@
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+
 }
 
 html,
@@ -28,6 +29,15 @@ body {
   background-color: var(--primary-color);
 }
 
+.el-card {
+  background-color: var(--secondary-color) !important;
+  border-color: var(--border-color) !important;
+}
+
+.el-select .el-select__wrapper {
+  background-color: var(--secondary-color) !important;
+  box-shadow: 0 0 0 1px #d8bfd8 inset !important;
+}
 
 /* 全局滚动条样式 */
 ::-webkit-scrollbar {

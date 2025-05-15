@@ -1,3 +1,216 @@
+<style scoped>
+.doc-processing-container {
+    width: 100%;
+}
+
+.tab-label {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.section-title {
+    display: flex;
+    align-items: center;
+    font-size: 18px;
+    font-weight: 500;
+    margin-bottom: 20px;
+    color: #303133;
+}
+
+.section-title .el-icon {
+    margin-right: 8px;
+    color: #409EFF;
+}
+
+.subsection-title {
+    font-size: 16px;
+    font-weight: 500;
+    margin: 20px 0 10px 0;
+    color: #697ba0;
+}
+
+.tab-content {
+    padding: 20px 0;
+}
+
+.stopwords-section,
+.tfidf-settings,
+.index-type-section,
+.advanced-options {
+    margin-top: 20px;
+    padding: 15px;
+    background-color: var(--secondar-color);
+    border-color: var(--border-color);
+    border-radius: 8px;
+}
+
+.index-type-select {
+    width: 100%;
+    max-width: 300px;
+}
+
+.form-label {
+    font-size: 14px;
+    margin-bottom: 8px;
+    color: #606266;
+    text-align: left;
+}
+
+.form-group {
+    margin-bottom: 20px;
+}
+
+.sub-setting {
+    margin-top: 10px;
+    padding-left: 20px;
+    border-left: 2px solid #e6e6e6;
+}
+
+.slider-value {
+    font-size: 12px;
+    color: #909399;
+    text-align: right;
+    margin-top: 5px;
+}
+
+.action-bar {
+    display: flex;
+    justify-content: center;
+    margin-top: 30px;
+    padding-top: 20px;
+    border-top: 1px solid #ebeef5;
+}
+
+.btn-icon {
+    margin-right: 5px;
+}
+
+.result-panel {
+    margin-top: 30px;
+    padding: 20px;
+    background-color: #f9fafc;
+    border-radius: 8px;
+    box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.05);
+}
+
+.stats-grid {
+    margin: 20px 0;
+}
+
+.stat-card {
+    text-align: center;
+    transition: all 0.3s;
+}
+
+.stat-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+}
+
+.stat-label {
+    font-size: 14px;
+    color: #909399;
+}
+
+.stat-value {
+    font-size: 24px;
+    font-weight: 600;
+    color: #303133;
+    margin-top: 8px;
+}
+
+.result-actions {
+    margin-top: 20px;
+    display: flex;
+    justify-content: center;
+    gap: 16px;
+}
+
+.log-container {
+    height: 400px;
+    overflow-y: auto;
+    padding: 10px;
+    font-family: monospace;
+    background-color: #1e1e1e;
+    color: #d4d4d4;
+    border-radius: 4px;
+}
+
+.log-item {
+    padding: 4px 0;
+    border-bottom: 1px solid #333;
+    line-height: 1.5;
+}
+
+.log-time {
+    color: #6a9955;
+    margin-right: 10px;
+}
+
+.log-level {
+    font-weight: bold;
+    margin-right: 10px;
+    padding: 2px 5px;
+    border-radius: 3px;
+}
+
+.info .log-level {
+    background-color: #294e80;
+    color: #ffffff;
+}
+
+.error .log-level {
+    background-color: #a31515;
+    color: #ffffff;
+}
+
+.warning .log-level {
+    background-color: #966000;
+    color: #ffffff;
+}
+
+.log-message {
+    color: #d4d4d4;
+}
+
+.report-container,
+.meta-container {
+    max-height: 500px;
+    overflow-y: auto;
+    padding: 15px;
+}
+
+.report-container h3,
+.meta-container h3 {
+    margin-top: 20px;
+    margin-bottom: 10px;
+    color: #409EFF;
+    font-weight: 500;
+    border-bottom: 1px solid #EBEEF5;
+    padding-bottom: 10px;
+}
+
+.total-size-info {
+    margin-top: 15px;
+    padding: 10px;
+    background-color: #f0f9ff;
+    border-radius: 4px;
+    border-left: 3px solid #409EFF;
+}
+
+/* 适配移动设备 */
+@media (max-width: 768px) {
+    .stats-grid .el-col {
+        margin-bottom: 15px;
+    }
+
+    .action-bar {
+        flex-direction: column;
+        gap: 15px;
+    }
+}
+</style>
 <template>
     <div class="doc-processing-container">
         <el-card class="content-card">
@@ -24,7 +237,7 @@
                 <!-- 预处理设置面板 -->
                 <div v-if="activeTab === 'preprocessing'" class="preprocessing-panel">
                     <!-- 数据源配置 -->
-                    <div class="data-source-panel">
+                    <!-- <div class="data-source-panel">
                         <h2 class="section-title">
                             <el-icon><el-icon-folder-opened /></el-icon>
                             检测到已爬取数据
@@ -34,7 +247,7 @@
                                 ...
                             </el-col>
                         </el-row>
-                    </div>
+                    </div> -->
 
                     <div class="stopwords-section">
                         <h3 class="subsection-title">停用词设置</h3>
@@ -65,7 +278,7 @@
                 <!-- 索引设置面板 -->
                 <div v-else class="indexing-panel">
                     <!-- 数据源配置 -->
-                    <div class="data-source-panel">
+                    <!-- <div class="data-source-panel">
                         <h2 class="section-title">
                             <el-icon><el-icon-folder-opened /></el-icon>
                             检测到预处理数据
@@ -76,7 +289,7 @@
                                 ...
                             </el-col>
                         </el-row>
-                    </div>
+                    </div> -->
 
                     <div class="index-type-section">
                         <div class="form-label">索引类型</div>
@@ -120,8 +333,7 @@
                         </el-button>
 
                         <el-button v-else type="primary" :loading="indexingStatus === 'processing'"
-                            :disabled="indexingStatus === 'processing' || !indexSettings.preprocessedDataDir"
-                            @click="startIndexing">
+                            :disabled="indexingStatus === 'processing'" @click="startIndexing">
                             <template v-if="indexingStatus === 'idle'">
                                 <el-icon class="btn-icon"><el-icon-refresh /></el-icon>
                                 开始构建索引
@@ -241,42 +453,108 @@
                 <div v-if="preprocessingReport">
                     <h3>基本信息</h3>
                     <el-descriptions :column="2" border>
-                        <el-descriptions-item label="总文档数">{{ preprocessingReport.docCount }}</el-descriptions-item>
-                        <el-descriptions-item label="处理耗时">{{ preprocessingReport.processingTime
-                            }}秒</el-descriptions-item>
-                        <el-descriptions-item label="特征词汇量">{{ preprocessingReport.vocabSize }}</el-descriptions-item>
-                        <el-descriptions-item label="TF-IDF矩阵维度">{{ preprocessingReport.matrixDimension
-                            }}</el-descriptions-item>
-                        <el-descriptions-item label="TF-IDF矩阵稀疏度">{{ preprocessingReport.matrixSparsity
-                            }}</el-descriptions-item>
+                        <el-descriptions-item label="处理起始时间">{{
+                            preprocessingReport.performance_metrics.processing_start_time }}</el-descriptions-item>
+                        <el-descriptions-item label="处理结束时间">{{
+                            preprocessingReport.performance_metrics.processing_end_time }}</el-descriptions-item>
+                        <el-descriptions-item label="总处理耗时">{{
+                            preprocessingReport.performance_metrics.total_processing_time_seconds.toFixed(2) }}秒 ({{
+                                preprocessingReport.performance_metrics.total_processing_time_minutes.toFixed(2)
+                            }}分钟)</el-descriptions-item>
                     </el-descriptions>
 
                     <h3>文档统计</h3>
                     <el-descriptions :column="2" border>
-                        <el-descriptions-item label="标题平均长度">{{ preprocessingReport.avgTitleLength
-                            }}字符</el-descriptions-item>
-                        <el-descriptions-item label="内容平均长度">{{ preprocessingReport.avgContentLength
-                            }}字符</el-descriptions-item>
-                        <el-descriptions-item label="标题平均分词数">{{ preprocessingReport.avgTitleTokens
+                        <el-descriptions-item label="总文档数">{{ preprocessingReport.document_statistics.total_documents
                             }}</el-descriptions-item>
-                        <el-descriptions-item label="内容平均分词数">{{ preprocessingReport.avgContentTokens
-                            }}</el-descriptions-item>
-                    </el-descriptions>
-
-                    <h3>去重信息</h3>
-                    <el-descriptions :column="2" border>
-                        <el-descriptions-item label="原始文档数">{{ preprocessingReport.originalDocCount
-                            }}</el-descriptions-item>
-                        <el-descriptions-item label="移除重复文档数">{{ preprocessingReport.duplicatesRemoved
-                            }}</el-descriptions-item>
-                        <el-descriptions-item label="重复率">{{ preprocessingReport.duplicationRate
+                        <el-descriptions-item label="原始文档数">{{
+                            preprocessingReport.document_statistics.original_documents }}</el-descriptions-item>
+                        <el-descriptions-item label="移除重复文档数">{{
+                            preprocessingReport.document_statistics.duplicates_removed }}</el-descriptions-item>
+                        <el-descriptions-item label="重复率">{{
+                            preprocessingReport.document_statistics.duplicate_percentage.toFixed(2)
                             }}%</el-descriptions-item>
                     </el-descriptions>
 
-                    <h3>文档来源统计</h3>
-                    <el-table :data="sourceStats" style="width: 100%">
-                        <el-table-column prop="source" label="来源" />
-                        <el-table-column prop="count" label="文档数" />
+                    <h3>内容统计</h3>
+                    <el-tabs type="border-card">
+                        <el-tab-pane label="标题">
+                            <el-descriptions :column="2" border>
+                                <el-descriptions-item label="平均字符长度">{{
+                                    preprocessingReport.content_statistics.title_length.mean_chars.toFixed(2)
+                                    }}</el-descriptions-item>
+                                <el-descriptions-item label="最大字符长度">{{
+                                    preprocessingReport.content_statistics.title_length.max_chars
+                                    }}</el-descriptions-item>
+                                <el-descriptions-item label="最小字符长度">{{
+                                    preprocessingReport.content_statistics.title_length.min_chars
+                                    }}</el-descriptions-item>
+                                <el-descriptions-item label="平均分词数">{{
+                                    preprocessingReport.content_statistics.title_words.mean_count.toFixed(2)
+                                    }}</el-descriptions-item>
+                                <el-descriptions-item label="最大分词数">{{
+                                    preprocessingReport.content_statistics.title_words.max_count
+                                    }}</el-descriptions-item>
+                                <el-descriptions-item label="最小分词数">{{
+                                    preprocessingReport.content_statistics.title_words.min_count
+                                    }}</el-descriptions-item>
+                            </el-descriptions>
+                        </el-tab-pane>
+                        <el-tab-pane label="内容">
+                            <el-descriptions :column="2" border>
+                                <el-descriptions-item label="平均字符长度">{{
+                                    preprocessingReport.content_statistics.content_length.mean_chars.toFixed(2)
+                                    }}</el-descriptions-item>
+                                <el-descriptions-item label="最大字符长度">{{
+                                    preprocessingReport.content_statistics.content_length.max_chars
+                                    }}</el-descriptions-item>
+                                <el-descriptions-item label="最小字符长度">{{
+                                    preprocessingReport.content_statistics.content_length.min_chars
+                                    }}</el-descriptions-item>
+                                <el-descriptions-item label="平均分词数">{{
+                                    preprocessingReport.content_statistics.content_words.mean_count.toFixed(2)
+                                    }}</el-descriptions-item>
+                                <el-descriptions-item label="最大分词数">{{
+                                    preprocessingReport.content_statistics.content_words.max_count
+                                    }}</el-descriptions-item>
+                                <el-descriptions-item label="最小分词数">{{
+                                    preprocessingReport.content_statistics.content_words.min_count
+                                    }}</el-descriptions-item>
+                            </el-descriptions>
+                        </el-tab-pane>
+                    </el-tabs>
+
+                    <h3>向量化统计</h3>
+                    <el-descriptions :column="2" border>
+                        <el-descriptions-item label="词汇量大小">{{
+                            preprocessingReport.vectorization_statistics.vocabulary_size }}</el-descriptions-item>
+                        <el-descriptions-item label="TF-IDF矩阵维度">{{
+                            preprocessingReport.vectorization_statistics.tfidf_matrix_shape.rows }} × {{
+                                preprocessingReport.vectorization_statistics.tfidf_matrix_shape.columns
+                            }}</el-descriptions-item>
+                        <el-descriptions-item label="TF-IDF矩阵稀疏度">{{
+                            (preprocessingReport.vectorization_statistics.tfidf_matrix_sparsity * 100).toFixed(2)
+                            }}%</el-descriptions-item>
+                        <el-descriptions-item label="非零元素数量">{{
+                            preprocessingReport.vectorization_statistics.nonzero_elements }}</el-descriptions-item>
+                    </el-descriptions>
+
+                    <h3>配置参数</h3>
+                    <el-descriptions :column="2" border>
+                        <el-descriptions-item label="最小文档频率(min_df)">{{
+                            preprocessingReport.configuration.tfidf_params.min_df }}</el-descriptions-item>
+                        <el-descriptions-item label="最大文档频率(max_df)">{{
+                            preprocessingReport.configuration.tfidf_params.max_df }}</el-descriptions-item>
+                        <el-descriptions-item label="样本大小">{{ preprocessingReport.configuration.sample_size
+                            }}</el-descriptions-item>
+                        <el-descriptions-item label="停用词数量">{{ preprocessingReport.configuration.stopwords_count
+                            }}</el-descriptions-item>
+                    </el-descriptions>
+
+                    <h3>输出文件</h3>
+                    <el-table :data="outputFilesData" style="width: 100%">
+                        <el-table-column prop="name" label="文件名" />
+                        <el-table-column prop="path" label="路径" />
                     </el-table>
                 </div>
                 <div v-else>
@@ -300,28 +578,65 @@
                 <div v-if="indexMetadata">
                     <h3>基本信息</h3>
                     <el-descriptions :column="2" border>
-                        <el-descriptions-item label="创建时间">{{ indexMetadata.indexCreatedTime }}</el-descriptions-item>
-                        <el-descriptions-item label="总文档数">{{ indexMetadata.totalDocuments }}</el-descriptions-item>
-                        <el-descriptions-item label="词汇量">{{ indexMetadata.vocabularySize }}</el-descriptions-item>
-                        <el-descriptions-item label="索引条目数">{{ indexMetadata.totalIndexEntries }}</el-descriptions-item>
-                        <el-descriptions-item label="每个词条平均索引条目">{{ indexMetadata.averagePostingsPerTerm
+                        <el-descriptions-item label="构建开始时间">{{ indexMetadata.performance_metrics.build_start_time
+                            }}</el-descriptions-item>
+                        <el-descriptions-item label="构建结束时间">{{ indexMetadata.performance_metrics.build_end_time
+                            }}</el-descriptions-item>
+                        <el-descriptions-item label="总构建时间">{{
+                            indexMetadata.performance_metrics.total_build_time_seconds.toFixed(2) }}秒 ({{
+                                indexMetadata.performance_metrics.total_build_time_minutes.toFixed(2)
+                            }}分钟)</el-descriptions-item>
+                    </el-descriptions>
+
+                    <h3>索引统计</h3>
+                    <el-descriptions :column="2" border>
+                        <el-descriptions-item label="总文档数">{{ indexMetadata.document_statistics.total_documents
+                            }}</el-descriptions-item>
+                        <el-descriptions-item label="总词条数">{{ indexMetadata.index_statistics.total_terms
+                            }}</el-descriptions-item>
+                        <el-descriptions-item label="词汇表大小">{{ indexMetadata.index_statistics.vocabulary_size
+                            }}</el-descriptions-item>
+                        <el-descriptions-item label="总索引条目数">{{ indexMetadata.index_statistics.total_postings
+                            }}</el-descriptions-item>
+                        <el-descriptions-item label="每个词条平均索引条目">{{
+                            indexMetadata.index_statistics.average_postings_per_term.toFixed(2)
                             }}</el-descriptions-item>
                     </el-descriptions>
 
-                    <h3 v-if="indexMetadata.optimized">优化信息</h3>
-                    <el-descriptions v-if="indexMetadata.optimized" :column="2" border>
-                        <el-descriptions-item label="优化阈值">{{ indexMetadata.optimizationThreshold
+                    <h3>优化信息</h3>
+                    <el-descriptions :column="2" border>
+                        <el-descriptions-item label="优化阈值">{{ indexMetadata.index_statistics.optimization.threshold
                             }}</el-descriptions-item>
-                        <el-descriptions-item label="原始词条数">{{ indexMetadata.originalTerms }}</el-descriptions-item>
-                        <el-descriptions-item label="优化后词条数">{{ indexMetadata.optimizedTerms }}</el-descriptions-item>
-                        <el-descriptions-item label="原始索引条目数">{{ indexMetadata.originalEntries }}</el-descriptions-item>
-                        <el-descriptions-item label="优化后索引条目数">{{ indexMetadata.optimizedEntries
-                            }}</el-descriptions-item>
+                        <el-descriptions-item label="原始词条数">{{
+                            indexMetadata.index_statistics.optimization.original_terms }}</el-descriptions-item>
+                        <el-descriptions-item label="优化后词条数">{{
+                            indexMetadata.index_statistics.optimization.optimized_terms }}</el-descriptions-item>
+                        <el-descriptions-item label="原始索引条目数">{{
+                            indexMetadata.index_statistics.optimization.original_entries }}</el-descriptions-item>
+                        <el-descriptions-item label="优化后索引条目数">{{
+                            indexMetadata.index_statistics.optimization.optimized_entries }}</el-descriptions-item>
                         <el-descriptions-item label="减少率">
-                            词条: {{ indexMetadata.reductionPercentage.terms }}%，
-                            条目: {{ indexMetadata.reductionPercentage.entries }}%
+                            词条: {{ indexMetadata.index_statistics.optimization.reduction_percentage.terms.toFixed(2)
+                            }}%，
+                            条目: {{ indexMetadata.index_statistics.optimization.reduction_percentage.entries.toFixed(2)
+                            }}%
                         </el-descriptions-item>
                     </el-descriptions>
+
+                    <h3>文档结构</h3>
+                    <el-descriptions :column="1" border>
+                        <el-descriptions-item label="可用字段">{{ indexMetadata.document_statistics.available_fields.join(',')}}</el-descriptions-item>
+                    </el-descriptions>
+
+                    <h3>输出文件</h3>
+                    <el-table :data="indexOutputFilesData" style="width: 100%">
+                        <el-table-column prop="name" label="文件名" />
+                        <el-table-column prop="size" label="大小" />
+                    </el-table>
+                    <div class="total-size-info">
+                        <p>总索引大小: <strong>{{ (indexMetadata.output_files.total_size_mb).toFixed(2) }} MB</strong> ({{
+                            indexMetadata.output_files.total_size_bytes }} 字节)</p>
+                    </div>
                 </div>
                 <div v-else>
                     加载元数据中...
@@ -341,7 +656,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, watch } from 'vue';
+import { ref, reactive, watch, computed } from 'vue';
 import {
     ElCard, ElTabs, ElTabPane, ElRow, ElCol, ElSwitch,
     ElSelect, ElOption, ElInputNumber, ElButton, ElResult,
@@ -357,35 +672,20 @@ import {
     Right as ElIconRight,
     Search as ElIconSearch,
     Download as ElIconDownload,
-    Folder as ElIconFolder,
     FolderOpened as ElIconFolderOpened,
 } from '@element-plus/icons-vue';
-import { ElMessage, ElMessageBox } from 'element-plus';
+import { ElMessage } from 'element-plus';
+import { StartPreprocess } from '../api/preprocess';
+import { StartInvertedIndex } from '../api/index';
 
 // 类型定义
-interface PreprocessingSettings {
-    tokenization: boolean;
-    removeStopwords: boolean;
-    stemming: boolean;
-    lemmatization: boolean;
-    caseFolding: boolean;
-    removeNumbers: boolean;
-    removePunctuation: boolean;
-}
-
 interface TfIdfSettings {
     minDf: number;
     maxDf: number;
 }
 
 interface IndexSettings {
-    preprocessedDataDir: string;
-    outputDir: string;
     indexType: string;
-    compressionEnabled: boolean;
-    includePositions: boolean;
-    includeFrequency: boolean;
-    storeOriginalText: boolean;
     optimize: boolean;
     minTfIdf: number;
 }
@@ -408,52 +708,13 @@ interface LogEntry {
     message: string;
 }
 
-interface PreprocessingReport {
-    docCount: number;
-    processingTime: number;
-    vocabSize: number;
-    matrixDimension: string;
-    matrixSparsity: number;
-    avgTitleLength: number;
-    avgContentLength: number;
-    avgTitleTokens: number;
-    avgContentTokens: number;
-    originalDocCount: number;
-    duplicatesRemoved: number;
-    duplicationRate: number;
-    sourceStats: {
-        source: string;
-        count: number;
-    }[];
-}
-
-interface IndexMetadata {
-    indexCreatedTime: string;
-    totalDocuments: number;
-    vocabularySize: number;
-    totalIndexEntries: number;
-    averagePostingsPerTerm: number;
-    optimized: boolean;
-    optimizationThreshold: number;
-    originalTerms: number;
-    originalEntries: number;
-    optimizedTerms: number;
-    optimizedEntries: number;
-    reductionPercentage: {
-        terms: number;
-        entries: number;
-    };
-}
-
-
 // 组件状态
 const activeTab = ref('preprocessing');
 const selectedFiles = ref<any[]>([]);
 const dataSourceType = ref('database');
-const stopwordsPath = ref('../cn_stopwords.txt');
+const stopwordsPath = ref('./cn_stopwords.txt');
 const processingStatus = ref<'idle' | 'processing' | 'completed'>('idle');
 const indexingStatus = ref<'idle' | 'processing' | 'completed'>('idle');
-const ngramSize = ref(3);
 
 // 对话框状态
 const logDialogVisible = ref(false);
@@ -462,20 +723,8 @@ const indexMetaDialogVisible = ref(false);
 
 // 日志和报告数据
 const processLogs = ref<LogEntry[]>([]);
-const preprocessingReport = ref<PreprocessingReport | null>(null);
-const indexMetadata = ref<IndexMetadata | null>(null);
-const sourceStats = ref<{ source: string, count: number }[]>([]);
-
-// 预处理设置
-const preprocessingSettings = reactive<PreprocessingSettings>({
-    tokenization: true,
-    removeStopwords: true,
-    stemming: false,
-    lemmatization: true,
-    caseFolding: true,
-    removeNumbers: false,
-    removePunctuation: true
-});
+const preprocessingReport = ref<any>(null);
+const indexMetadata = ref<any>(null);
 
 // TF-IDF设置
 const tfIdfSettings = reactive<TfIdfSettings>({
@@ -485,13 +734,7 @@ const tfIdfSettings = reactive<TfIdfSettings>({
 
 // 索引设置
 const indexSettings = reactive<IndexSettings>({
-    preprocessedDataDir: '../data/preprocessed_data',
-    outputDir: '../data/preprocessed_data/inverted_index',
     indexType: 'inverted',
-    compressionEnabled: true,
-    includePositions: true,
-    includeFrequency: true,
-    storeOriginalText: true,
     optimize: true,
     minTfIdf: 0.01
 });
@@ -510,6 +753,32 @@ const indexingStats = reactive<IndexingStats>({
     indexSize: ''
 });
 
+// 为预处理报告创建输出文件列表数据
+const outputFilesData = computed(() => {
+    if (!preprocessingReport.value || !preprocessingReport.value.output_files) return [];
+
+    return Object.entries(preprocessingReport.value.output_files).map(([key, value]) => ({
+        name: key,
+        path: value
+    }));
+});
+
+// 为索引输出文件创建表格数据
+const indexOutputFilesData = computed(() => {
+    if (!indexMetadata.value || !indexMetadata.value.output_files || !indexMetadata.value.output_files.files) return [];
+
+    return Object.entries(indexMetadata.value.output_files.files).map(([name, size]) => ({
+        name,
+        size: formatFileSize(size as number)
+    }));
+});
+
+// 文件大小格式化辅助函数
+const formatFileSize = (bytes: number): string => {
+    if (bytes < 1024) return bytes + ' B';
+    else if (bytes < 1048576) return (bytes / 1024).toFixed(2) + ' KB';
+    else return (bytes / 1048576).toFixed(2) + ' MB';
+};
 
 // 添加日志
 const addLog = (level: string, message: string) => {
@@ -534,57 +803,27 @@ const startPreprocessing = async () => {
 
     try {
         // 调用预处理API
-        // 假设有一个API端点 /api/preprocess
+        const response = await StartPreprocess(tfIdfSettings.minDf, tfIdfSettings.maxDf);
+
         addLog('INFO', '正在调用预处理API...');
-
-        // 模拟API调用
-        await new Promise(resolve => setTimeout(resolve, 3000));
-
-        // 模拟API响应
-        const response = {
-            success: true,
-            data: {
-                docCount: 1256,
-                vocabSize: 23654,
-                duplicationRate: 12.5,
-                processingTime: 45.6,
-                matrixDimension: "1256 x 23654",
-                matrixSparsity: 0.994,
-                avgTitleLength: 32.5,
-                avgContentLength: 1458.7,
-                avgTitleTokens: 8.3,
-                avgContentTokens: 342.1,
-                originalDocCount: 1435,
-                duplicatesRemoved: 179,
-                sourceStats: [
-                    { source: "新闻网站", count: 756 },
-                    { source: "政府公告", count: 324 },
-                    { source: "学术文章", count: 176 }
-                ]
-            }
-        };
-
         // 处理响应
-        if (response.success) {
+        if (response.data) {
             // 更新预处理统计信息
-            preprocessingStats.docCount = response.data.docCount;
-            preprocessingStats.vocabSize = response.data.vocabSize;
-            preprocessingStats.duplicationRate = response.data.duplicationRate;
+            preprocessingStats.docCount = response.data.document_statistics.total_documents;
+            preprocessingStats.vocabSize = response.data.vectorization_statistics.vocabulary_size;
+            preprocessingStats.duplicationRate = response.data.document_statistics.duplicate_percentage;
 
             // 保存预处理报告
             preprocessingReport.value = response.data;
-            sourceStats.value = response.data.sourceStats;
 
             addLog('INFO', '预处理成功完成!');
             processingStatus.value = 'completed';
-
-            // 设置索引构建的预处理数据目录
-            indexSettings.preprocessedDataDir = '../data/preprocessed_data';
         } else {
             throw new Error('API返回处理失败');
         }
     } catch (error) {
         addLog('ERROR', `预处理失败: ${error}`);
+        console.log(`预处理失败: ${error}`)
         ElMessage.error('预处理失败，请查看日志获取详细信息。');
         processingStatus.value = 'idle';
     }
@@ -601,62 +840,19 @@ const startIndexing = async () => {
     addLog('INFO', '开始构建索引...');
 
     try {
-        // 构建索引请求参数
-        const params = {
-            preprocessedDataDir: indexSettings.preprocessedDataDir,
-            outputDir: indexSettings.outputDir,
-            indexType: indexSettings.indexType,
-            optimize: indexSettings.optimize,
-            minTfIdf: indexSettings.minTfIdf,
-            compressionEnabled: indexSettings.compressionEnabled,
-            includePositions: indexSettings.includePositions,
-            includeFrequency: indexSettings.includeFrequency,
-            storeOriginalText: indexSettings.storeOriginalText,
-            ngramSize: indexSettings.indexType === 'ngram' ? ngramSize.value : null
-        };
-
         // 调用索引构建API
+        const response = await StartInvertedIndex(indexSettings.optimize, indexSettings.minTfIdf);
         addLog('INFO', '正在调用索引构建API...');
 
-        // 模拟API调用
-        await new Promise(resolve => setTimeout(resolve, 2500));
-
-        // 模拟API响应
-        const response = {
-            success: true,
-            data: {
-                termCount: 15420,
-                entryCount: 985632,
-                indexSize: '3.75 MB',
-                metadata: {
-                    indexCreatedTime: '2025-05-14 15:30:45',
-                    totalDocuments: 1256,
-                    vocabularySize: 15420,
-                    totalIndexEntries: 985632,
-                    averagePostingsPerTerm: 63.9,
-                    optimized: true,
-                    optimizationThreshold: 0.01,
-                    originalTerms: 23654,
-                    originalEntries: 1458963,
-                    optimizedTerms: 15420,
-                    optimizedEntries: 985632,
-                    reductionPercentage: {
-                        terms: 34.8,
-                        entries: 32.4
-                    }
-                }
-            }
-        };
-
         // 处理响应
-        if (response.success) {
+        if (response.data) {
             // 更新索引统计信息
-            indexingStats.termCount = response.data.termCount;
-            indexingStats.entryCount = response.data.entryCount;
-            indexingStats.indexSize = response.data.indexSize;
+            indexingStats.termCount = response.data.index_statistics.total_terms;
+            indexingStats.entryCount = response.data.index_statistics.total_postings;
+            indexingStats.indexSize = formatFileSize(response.data.output_files.total_size_bytes);
 
             // 保存索引元数据
-            indexMetadata.value = response.data.metadata;
+            indexMetadata.value = response.data;
 
             addLog('INFO', '索引构建成功完成!');
             indexingStatus.value = 'completed';
@@ -753,254 +949,3 @@ watch(dataSourceType, (newType) => {
     }
 });
 </script>
-
-<style scoped>
-.doc-processing-container {
-    width: 100%;
-}
-
-.tab-label {
-    display: flex;
-    align-items: center;
-    gap: 5px;
-}
-
-.section-title {
-    display: flex;
-    align-items: center;
-    font-size: 18px;
-    font-weight: 500;
-    margin-bottom: 20px;
-    color: #303133;
-}
-
-.section-title .el-icon {
-    margin-right: 8px;
-    color: #409EFF;
-}
-
-.subsection-title {
-    font-size: 16px;
-    font-weight: 500;
-    margin: 20px 0 10px 0;
-    color: #697ba0;
-}
-
-.tab-content {
-    padding: 20px 0;
-}
-
-.data-source-panel,
-.preprocessing-panel,
-.indexing-panel {
-    margin-bottom: 30px;
-}
-
-.setting-item {
-    margin-bottom: 15px;
-    transition: all 0.3s;
-}
-
-.setting-item:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1);
-}
-
-.setting-content {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
-
-.language-section,
-.stopwords-section,
-.tfidf-settings,
-.index-type-section,
-.data-path-section,
-.advanced-options {
-    margin-top: 30px;
-    padding: 15px;
-    background-color: #f9f9f9;
-    border-radius: 8px;
-}
-
-.language-select,
-.index-type-select,
-.weighting-select {
-    width: 100%;
-    max-width: 300px;
-}
-
-.form-label {
-    font-size: 14px;
-    margin-bottom: 8px;
-    color: #606266;
-    text-align: left;
-}
-
-.form-group {
-    margin-bottom: 20px;
-}
-
-.sub-setting {
-    margin-top: 10px;
-    padding-left: 20px;
-    border-left: 2px solid #e6e6e6;
-}
-
-.slider-value {
-    font-size: 12px;
-    color: #909399;
-    text-align: right;
-    margin-top: 5px;
-}
-
-.action-bar {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-top: 30px;
-    padding-top: 20px;
-    border-top: 1px solid #ebeef5;
-}
-
-.status-panel {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    color: #606266;
-}
-
-.action-buttons {
-    display: flex;
-    gap: 10px;
-}
-
-.btn-icon {
-    margin-right: 5px;
-}
-
-.result-panel {
-    margin-top: 30px;
-    padding: 20px;
-    background-color: #f9fafc;
-    border-radius: 8px;
-    box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.05);
-}
-
-.stats-grid {
-    margin: 20px 0;
-}
-
-.stat-card {
-    text-align: center;
-    transition: all 0.3s;
-}
-
-.stat-card:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
-}
-
-.stat-label {
-    font-size: 14px;
-    color: #909399;
-}
-
-.stat-value {
-    font-size: 24px;
-    font-weight: 600;
-    color: #303133;
-    margin-top: 8px;
-}
-
-.result-actions {
-    margin-top: 20px;
-    display: flex;
-    justify-content: center;
-    gap: 16px;
-}
-
-.log-container {
-    height: 400px;
-    overflow-y: auto;
-    padding: 10px;
-    font-family: monospace;
-    background-color: #1e1e1e;
-    color: #d4d4d4;
-    border-radius: 4px;
-}
-
-.log-item {
-    padding: 4px 0;
-    border-bottom: 1px solid #333;
-    line-height: 1.5;
-}
-
-.log-time {
-    color: #6a9955;
-    margin-right: 10px;
-}
-
-.log-level {
-    font-weight: bold;
-    margin-right: 10px;
-    padding: 2px 5px;
-    border-radius: 3px;
-}
-
-.info .log-level {
-    background-color: #294e80;
-    color: #ffffff;
-}
-
-.error .log-level {
-    background-color: #a31515;
-    color: #ffffff;
-}
-
-.warning .log-level {
-    background-color: #966000;
-    color: #ffffff;
-}
-
-.log-message {
-    color: #d4d4d4;
-}
-
-.report-container,
-.meta-container {
-    max-height: 500px;
-    overflow-y: auto;
-    padding: 15px;
-}
-
-.report-container h3,
-.meta-container h3 {
-    margin-top: 20px;
-    margin-bottom: 10px;
-    color: #409EFF;
-    font-weight: 500;
-}
-
-/* 适配移动设备 */
-@media (max-width: 768px) {
-    .settings-grid {
-        display: block;
-    }
-
-    .stats-grid .el-col {
-        margin-bottom: 15px;
-    }
-
-    .action-bar {
-        flex-direction: column;
-        gap: 15px;
-    }
-
-    .status-panel,
-    .action-buttons {
-        width: 100%;
-    }
-}
-</style>
