@@ -9,11 +9,11 @@
         "https://news.whu.edu.cn/kydt.htm",
         "https://news.whu.edu.cn/xywh/bfxy.htm",
         "https://news.whu.edu.cn/ztbd.htm",
-        "https: //news.whu.edu.cn/mtwd.htm",
+        "https://news.whu.edu.cn/mtwd.htm",
         "https://news.whu.edu.cn/ljrw.htm",
         "https://news.whu.edu.cn/stkj/ljyx.htm"
     ],
-    "max_pages": 100,
+    "max_pages": 10,
     "iterations": 10,
     "timeout": 20,
     "encoding_settings": {
@@ -108,13 +108,6 @@
         "allow_subdomains": true,
         "random_delay": true,
         "delay_variance": 0.5
-    },
-    "storage_settings": {
-        "enable_compression": true,
-        "save_raw_html": true,
-        "save_screenshots": false,
-        "backup_interval": 500,
-        "checkpoint_interval": 1000
     },
     "user_agent_list": [
         "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/100.0.4896.127 Safari/537.36",

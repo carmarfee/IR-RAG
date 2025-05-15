@@ -43,7 +43,7 @@
         <p style="font-size:small;text-align: left;">{{ content }}</p>
         <div class="footer">
             <el-row>
-                <el-col :span="18">
+                <el-col :span="24">
                     <div class="info" style="display: flex;justify-content: left;align-items: center;">
                         <span style="font-size: small;"><svg t="1746894135225" class="icon" viewBox="0 0 1024 1024"
                                 version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="2633" width="16" height="16">
@@ -76,13 +76,6 @@
                                     d="M288.75 485.605v55.642h55.643v-55.642h-13.91zM483.69 485.605h55.642v55.642H483.69v-55.642zM483.69 652.695h55.642v55.643H483.69v-55.643zM288.75 652.695h55.643v55.643h-55.642v-55.643zM678.41 484.736h55.642v55.642H678.41v-55.642zM678.572 652.804h55.643v55.642h-55.643v-55.642z"
                                     p-id="5645"></path>
                             </svg> {{ publish_time }}</span>
-                    </div>
-                </el-col>
-                <el-col :span="6">
-                    <div class="tags" style="display: flex;justify-content: center;align-items: center;gap: 2px;">
-                        <el-tag type="primary" effect="dark" size="small" round>Tag 1</el-tag>
-                        <el-tag type="primary" effect="dark" size="small" round>Tag 2</el-tag>
-                        <el-tag type="primary" effect="dark" size="small" round>Tag 3</el-tag>
                     </div>
                 </el-col>
             </el-row>

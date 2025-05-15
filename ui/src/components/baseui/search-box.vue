@@ -20,6 +20,7 @@
     font-size: 14px;
     text-transform: uppercase;
     letter-spacing: 2px;
+    background-color: transparent;
 }
 
 .input:focus {

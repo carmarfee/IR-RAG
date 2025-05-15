@@ -62,6 +62,25 @@ class InvertedIndexBuilder:
         self.metadata = None
         self.doc_id_mapping = None  # 添加文档ID映射
         
+        # 用于生成报告的数据收集
+        self.report_data = {
+            "start_time": time.time(),
+            "index_statistics": {},
+            "document_statistics": {},
+            "performance_metrics": {}
+        }
+    
+    def _add_step_to_report(self, step_name, success, duration, details=None):
+        """向报告中添加执行步骤信息"""
+        step_info = {
+            "step_name": step_name,
+            "success": success,
+            "start_time": time.strftime("%Y-%m-%d %H:%M:%S"),
+            "duration_seconds": duration,
+            "details": details or {}
+        }
+        self.report_data["steps"].append(step_info)
+        
     def load_preprocessed_data(self):
         """加载预处理后的数据"""
         try:
@@ -107,13 +126,18 @@ class InvertedIndexBuilder:
     
     def compute_document_lengths(self):
         """计算文档向量的长度（用于余弦相似度计算）"""
-        start_time = time.time()
-        logger.info("计算文档向量长度...")
-        
-        # 计算每个文档向量的L2范数（欧几里得长度）
-        self.doc_lengths = np.sqrt(np.array(self.tfidf_matrix.power(2).sum(axis=1)).flatten())
-        
-        logger.info(f"文档向量长度计算完成，耗时: {time.time() - start_time:.2f}秒")
+        try:
+            logger.info("计算文档向量长度...")
+            
+            # 计算每个文档向量的L2范数（欧几里得长度）
+            self.doc_lengths = np.sqrt(np.array(self.tfidf_matrix.power(2).sum(axis=1)).flatten())
+            
+            logger.info(f"文档向量长度计算完成")
+            return True
+            
+        except Exception as e:
+            logger.error(f"计算文档向量长度失败: {e}")
+            return False
         
     def build_inverted_index(self):
         """构建倒排索引"""
@@ -121,48 +145,52 @@ class InvertedIndexBuilder:
             logger.error("TF-IDF矩阵或特征名称未加载，无法构建倒排索引")
             return False
         
-        start_time = time.time()
-        logger.info("开始构建倒排索引...")
-        
-        # 初始化倒排索引字典
-        self.inverted_index = defaultdict(list)
-        
-        # 获取TF-IDF矩阵的非零元素
-        cx = self.tfidf_matrix.tocoo()
-        
-        # 遍历所有非零元素
-        for i, j, v in zip(cx.row, cx.col, cx.data):
-            # i: 矩阵行索引, j: 特征(词)的索引, v: TF-IDF值
-            if v > 0:  # 只记录TF-IDF值大于0的条目
-                term = self.feature_names[j]
-                
-                # 使用原始文档ID而不是矩阵行索引
-                if self.doc_id_mapping is not None:
-                    doc_id = int(self.doc_id_mapping[i])  # 获取原始文档ID
-                else:
-                    doc_id = int(i)  # 如果没有映射，则使用矩阵行索引
-                
-                weight = float(v)  # 确保是Python原生float类型
-                
-                # 将(文档ID, 权重)对添加到该词的倒排列表中
-                self.inverted_index[term].append((doc_id, weight))
-        
-        # 统计索引大小
-        total_entries = sum(len(postings) for postings in self.inverted_index.values())
-        logger.info(f"倒排索引构建完成，包含{len(self.inverted_index)}个词条，{total_entries}个索引条目")
-        logger.info(f"构建耗时: {time.time() - start_time:.2f}秒")
-        
-        # 创建索引元数据
-        self.metadata = {
-            "index_created_time": time.strftime("%Y-%m-%d %H:%M:%S"),
-            "total_documents": int(len(self.processed_data)),  # 确保是原生int类型
-            "vocabulary_size": int(len(self.feature_names)),
-            "total_index_entries": int(total_entries),
-            "average_postings_per_term": float(total_entries / max(1, len(self.inverted_index))),
-            "uses_original_doc_ids": self.doc_id_mapping is not None  # 记录是否使用了原始文档ID
-        }
-        
-        return True
+        try:
+            logger.info("开始构建倒排索引...")
+            
+            # 初始化倒排索引字典
+            self.inverted_index = defaultdict(list)
+            
+            # 获取TF-IDF矩阵的非零元素
+            cx = self.tfidf_matrix.tocoo()
+            
+            # 遍历所有非零元素
+            for i, j, v in zip(cx.row, cx.col, cx.data):
+                # i: 矩阵行索引, j: 特征(词)的索引, v: TF-IDF值
+                if v > 0:  # 只记录TF-IDF值大于0的条目
+                    term = self.feature_names[j]
+                    
+                    # 使用原始文档ID而不是矩阵行索引
+                    if self.doc_id_mapping is not None:
+                        doc_id = int(self.doc_id_mapping[i])  # 获取原始文档ID
+                    else:
+                        doc_id = int(i)  # 如果没有映射，则使用矩阵行索引
+                    
+                    weight = float(v)  # 确保是Python原生float类型
+                    
+                    # 将(文档ID, 权重)对添加到该词的倒排列表中
+                    self.inverted_index[term].append((doc_id, weight))
+            
+            # 统计索引大小
+            total_entries = sum(len(postings) for postings in self.inverted_index.values())
+            
+            logger.info(f"倒排索引构建完成，包含{len(self.inverted_index)}个词条，{total_entries}个索引条目")
+            
+            # 创建索引元数据
+            self.metadata = {
+                "index_created_time": time.strftime("%Y-%m-%d %H:%M:%S"),
+                "total_documents": int(len(self.processed_data)),  # 确保是原生int类型
+                "vocabulary_size": int(len(self.feature_names)),
+                "total_index_entries": int(total_entries),
+                "average_postings_per_term": float(total_entries / max(1, len(self.inverted_index))),
+                "uses_original_doc_ids": self.doc_id_mapping is not None  # 记录是否使用了原始文档ID
+            }
+            
+            return True
+            
+        except Exception as e:
+            logger.error(f"构建倒排索引失败: {e}")
+            return False
     
     def optimize_index(self, min_tfidf=0.01):
         """
@@ -173,53 +201,108 @@ class InvertedIndexBuilder:
         """
         if self.inverted_index is None:
             logger.error("倒排索引尚未构建，无法优化")
-            return
+            return False
         
-        start_time = time.time()
-        logger.info(f"开始优化倒排索引(最小TF-IDF阈值: {min_tfidf})...")
-        
-        # 记录优化前的统计信息
-        original_terms = len(self.inverted_index)
-        original_entries = sum(len(postings) for postings in self.inverted_index.values())
-        
-        # 优化索引
-        optimized_index = defaultdict(list)
-        
-        for term, postings in self.inverted_index.items():
-            # 保留权重大于阈值的条目
-            filtered_postings = [(int(doc_id), float(weight)) for doc_id, weight in postings if weight >= min_tfidf]
+        try:
+            logger.info(f"开始优化倒排索引(最小TF-IDF阈值: {min_tfidf})...")
             
-            # 如果该词仍有文档与之关联，则保留在索引中
-            if filtered_postings:
-                optimized_index[term] = filtered_postings
-        
-        # 更新索引
-        self.inverted_index = optimized_index
-        
-        # 更新统计信息 (确保使用原生Python类型)
-        remaining_terms = len(self.inverted_index)
-        remaining_entries = sum(len(postings) for postings in self.inverted_index.values())
-        reduction_terms = original_terms - remaining_terms
-        reduction_entries = original_entries - remaining_entries
-        
-        logger.info(f"索引优化完成，耗时: {time.time() - start_time:.2f}秒")
-        logger.info(f"优化前: {original_terms}个词条，{original_entries}个索引条目")
-        logger.info(f"优化后: {remaining_terms}个词条，{remaining_entries}个索引条目")
-        logger.info(f"减少了: {reduction_terms}个词条({reduction_terms/max(1,original_terms)*100:.2f}%)，"
-                   f"{reduction_entries}个索引条目({reduction_entries/max(1,original_entries)*100:.2f}%)")
-        
-        # 更新元数据
-        self.metadata["optimized"] = True
-        self.metadata["optimization_threshold"] = float(min_tfidf)
-        self.metadata["original_terms"] = int(original_terms)
-        self.metadata["original_entries"] = int(original_entries)
-        self.metadata["optimized_terms"] = int(remaining_terms)
-        self.metadata["optimized_entries"] = int(remaining_entries)
-        self.metadata["reduction_percentage"] = {
-            "terms": float(reduction_terms/max(1,original_terms)*100),
-            "entries": float(reduction_entries/max(1,original_entries)*100)
-        }
-    
+            # 将min_tfidf确保为浮点数
+            min_tfidf = float(min_tfidf)
+            
+            # 记录优化前的统计信息
+            original_terms = len(self.inverted_index)
+            original_entries = sum(len(postings) for postings in self.inverted_index.values())
+            
+            # 优化索引
+            optimized_index = defaultdict(list)
+            error_count = 0
+            
+            # 调试打印一些倒排表数据，看看实际存储的是什么
+            term_sample = next(iter(self.inverted_index.keys())) if self.inverted_index else None
+            if term_sample:
+                postings_sample = self.inverted_index[term_sample][:3] if self.inverted_index[term_sample] else []
+                logger.info(f"样本词条 '{term_sample}' 的倒排表(前3项): {postings_sample}")
+                if postings_sample:
+                    logger.info(f"样本权重类型: {type(postings_sample[0][1])}")
+            
+            for term, postings in self.inverted_index.items():
+                # 保留权重大于阈值的条目
+                filtered_postings = []
+                
+                for posting in postings:
+                    try:
+                        # 确保posting是元组，并且有两个元素
+                        if not isinstance(posting, (list, tuple)) or len(posting) != 2:
+                            logger.warning(f"倒排表项结构异常: {posting}")
+                            continue
+                        
+                        doc_id, weight = posting
+                        
+                        # 检查权重类型，进行适当的比较
+                        if isinstance(weight, (int, float)):
+                            # 直接使用数值比较
+                            if float(weight) >= min_tfidf:
+                                filtered_postings.append((int(doc_id), float(weight)))
+                        elif isinstance(weight, str):
+                            # 尝试将字符串转换为浮点数再比较
+                            weight_float = float(weight)
+                            if weight_float >= min_tfidf:
+                                filtered_postings.append((int(doc_id), weight_float))
+                        else:
+                            # 对于其他类型，记录错误并尝试强制转换
+                            logger.warning(f"未知权重类型: {type(weight)}, 值: {weight}")
+                            weight_float = float(str(weight))
+                            if weight_float >= min_tfidf:
+                                filtered_postings.append((int(doc_id), weight_float))
+                    
+                    except (ValueError, TypeError) as e:
+                        error_count += 1
+                        if error_count <= 10:
+                            logger.warning(f"处理倒排表项出错: {e}, 词条={term}, 倒排表项={posting}")
+                        elif error_count == 11:
+                            logger.warning("出现过多错误，后续错误将不再单独记录")
+                
+                # 如果该词仍有文档与之关联，则保留在索引中
+                if filtered_postings:
+                    optimized_index[term] = filtered_postings
+            
+            # 更新索引
+            self.inverted_index = optimized_index
+            
+            # 更新统计信息 (确保使用原生Python类型)
+            remaining_terms = len(self.inverted_index)
+            remaining_entries = sum(len(postings) for postings in self.inverted_index.values())
+            reduction_terms = original_terms - remaining_terms
+            reduction_entries = original_entries - remaining_entries
+            
+            if error_count > 0:
+                logger.warning(f"优化过程中共处理了{error_count}个异常倒排表项")
+            
+            logger.info(f"索引优化完成")
+            logger.info(f"优化前: {original_terms}个词条，{original_entries}个索引条目")
+            logger.info(f"优化后: {remaining_terms}个词条，{remaining_entries}个索引条目")
+            logger.info(f"减少了: {reduction_terms}个词条({reduction_terms/max(1,original_terms)*100:.2f}%)，"
+                      f"{reduction_entries}个索引条目({reduction_entries/max(1,original_entries)*100:.2f}%)")
+            
+            # 更新元数据
+            self.metadata["optimized"] = True
+            self.metadata["optimization_threshold"] = float(min_tfidf)
+            self.metadata["original_terms"] = int(original_terms)
+            self.metadata["original_entries"] = int(original_entries)
+            self.metadata["optimized_terms"] = int(remaining_terms)
+            self.metadata["optimized_entries"] = int(remaining_entries)
+            self.metadata["reduction_percentage"] = {
+                "terms": float(reduction_terms/max(1,original_terms)*100),
+                "entries": float(reduction_entries/max(1,original_entries)*100)
+            }
+            
+            return True
+            
+        except Exception as e:
+            logger.error(f"优化索引失败: {e}")
+            import traceback
+            logger.error(traceback.format_exc())
+            return False
     def save_inverted_index(self):
         """保存倒排索引和相关数据"""
         if self.inverted_index is None:
@@ -227,7 +310,6 @@ class InvertedIndexBuilder:
             return False
         
         try:
-            start_time = time.time()
             logger.info("开始保存倒排索引...")
             
             # 转换defaultdict为普通dict以便序列化，并转换NumPy类型
@@ -286,7 +368,7 @@ class InvertedIndexBuilder:
                 for term in self.feature_names:
                     f.write(f"{term}\n")
             
-            logger.info(f"倒排索引及相关数据保存完成，耗时: {time.time() - start_time:.2f}秒")
+            logger.info(f"倒排索引及相关数据保存完成")
             logger.info(f"数据已保存到: {self.output_dir}")
             
             return True
@@ -294,6 +376,78 @@ class InvertedIndexBuilder:
             logger.error(f"保存倒排索引失败: {e}")
             import traceback
             logger.error(traceback.format_exc())
+            return False
+    
+    def generate_report(self):
+        """生成索引构建结果报告"""
+        logger.info("正在生成索引构建结果报告...")
+        
+        # 计算总执行时间
+        total_duration = time.time() - self.report_data["start_time"]
+        
+        # 文档统计信息
+        if self.processed_data is not None:
+            self.report_data["document_statistics"] = {
+                "total_documents": len(self.processed_data),
+                "available_fields": list(self.processed_data.columns)
+            }
+        
+        # 索引统计信息
+        if self.inverted_index is not None:
+            total_entries = sum(len(postings) for postings in self.inverted_index.values())
+            
+            self.report_data["index_statistics"] = {
+                "total_terms": len(self.inverted_index),
+                "vocabulary_size": len(self.feature_names) if self.feature_names is not None else 0,
+                "total_postings": total_entries,
+                "average_postings_per_term": total_entries / max(1, len(self.inverted_index))
+            }
+            
+            # 如果进行了优化，添加优化结果
+            if hasattr(self, 'metadata') and self.metadata and 'optimized' in self.metadata and self.metadata['optimized']:
+                self.report_data["index_statistics"]["optimization"] = {
+                    "threshold": self.metadata["optimization_threshold"],
+                    "original_terms": self.metadata["original_terms"],
+                    "optimized_terms": self.metadata["optimized_terms"],
+                    "original_entries": self.metadata["original_entries"],
+                    "optimized_entries": self.metadata["optimized_entries"],
+                    "reduction_percentage": self.metadata["reduction_percentage"]
+                }
+        
+        # 性能指标
+        self.report_data["performance_metrics"] = {
+            "build_start_time": time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(self.report_data["start_time"])),
+            "build_end_time": time.strftime("%Y-%m-%d %H:%M:%S"),
+            "total_build_time_seconds": total_duration,
+            "total_build_time_minutes": total_duration / 60
+        }
+        
+        # 添加文件大小信息
+        if os.path.exists(self.output_dir):
+            file_sizes = {}
+            total_size = 0
+            for file_name in os.listdir(self.output_dir):
+                file_path = os.path.join(self.output_dir, file_name)
+                if os.path.isfile(file_path):
+                    size = os.path.getsize(file_path)
+                    file_sizes[file_name] = size
+                    total_size += size
+            
+            self.report_data["output_files"] = {
+                "files": file_sizes,
+                "total_size_bytes": total_size,
+                "total_size_mb": total_size / (1024 * 1024)
+            }
+        
+        # 保存报告
+        report_path = os.path.join(self.output_dir, "index_results.json")
+        try:
+            with open(report_path, 'w', encoding='utf-8') as f:
+                json.dump(convert_numpy_types(self.report_data), f, ensure_ascii=False, indent=2)
+            logger.info(f"索引构建结果报告已保存到: {report_path}")
+            return True
+        except Exception as e:
+            logger.error(f"保存索引构建结果报告失败: {e}")
             return False
     
     def run_pipeline(self, optimize=True, min_tfidf=0.01):
@@ -328,6 +482,8 @@ class InvertedIndexBuilder:
         if not self.save_inverted_index():
             logger.error("保存倒排索引失败")
             return False
+        # 6. 生成报告
+        self.generate_report()
         
         total_time = time.time() - start_time
         logger.info(f"倒排索引构建流程完成，总耗时: {total_time:.2f}秒")

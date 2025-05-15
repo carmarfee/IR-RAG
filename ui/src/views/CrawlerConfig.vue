@@ -12,7 +12,7 @@ import { GetCrawlerConfig, SaveCrawlerConfig } from '../api/crawler';
 // 默认爬虫配置 - 必须在使用前先定义
 const defaultConfig = {
     baseUrl: 'https://news.whu.edu.cn/',
-    maxPages: 100,
+    maxPages: 10,
     iterations: 10,
     maxDepth: 8,
     delay: 2.0,
@@ -355,10 +355,8 @@ const saveConfig = async () => {
         };
 
         // 在实际应用中，这里应该调用API保存配置
-        // await SaveCrawlerConfig(backendConfig);
-
-        // 模拟保存成功
-        await new Promise(resolve => setTimeout(resolve, 500));
+        const response = await SaveCrawlerConfig(backendConfig);
+        console.log(response.data)
         configModified.value = false;
     } catch (error) {
         console.log(`配置保存失败: ${error.message}`)
@@ -593,7 +591,7 @@ onMounted(() => {
 
                     <el-table :data="domainEncodingsArray" style="width: 100%" border>
                         <el-table-column prop="domain" label="域名" />
-                        <el-table-column prop="encoding" label="编码"/>
+                        <el-table-column prop="encoding" label="编码" />
                         <el-table-column label="操作">
                             <template #default="scope">
                                 <el-button type="danger" size="small"

@@ -1,0 +1,7 @@
+{
+    "tfidf_params": {
+        "min_df": 2,
+        "max_df": 0.95
+    },
+    "sample_size": 5
+}

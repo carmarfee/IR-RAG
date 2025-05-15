@@ -3,7 +3,8 @@ import myheader from '@/components/layouts/header.vue';
 import myfooter from '@/components/layouts/footer.vue';
 import mylogo from './components/baseui/logo.vue';
 import github from './components/baseui/github.vue';
-import { ref } from 'vue'
+import { useThemeStore } from './stores/themeStore';
+import { ref, onMounted } from 'vue'
 import {
   Search,
   Clock,
@@ -13,6 +14,8 @@ import {
   Expand
 } from '@element-plus/icons-vue'
 
+
+const themeStore = useThemeStore()
 
 // 定义折叠状态
 const isCollapse = ref(false)
@@ -26,6 +29,10 @@ const toggleCollapse = () => {
   console.log('change')
   isCollapse.value = !isCollapse.value
 }
+
+onMounted(() => {
+  themeStore.initTheme()
+})
 
 </script>
 
@@ -135,7 +142,6 @@ const toggleCollapse = () => {
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  background-color: #2b2f3a;
   transition: all 0.3s;
 }
 
@@ -158,7 +164,6 @@ const toggleCollapse = () => {
   height: 100%;
   margin: 0;
   padding: 0;
-  background-color: #333131;
   box-shadow: 0 0 10px 5px rgba(0, 0, 0, 0.8);
 }
 

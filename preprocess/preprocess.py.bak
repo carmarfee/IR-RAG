@@ -8,7 +8,6 @@ import pickle
 import os
 import logging
 from datetime import datetime
-import json
 
 # 设置日志
 logging.basicConfig(
@@ -19,52 +18,25 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 class ChineseDocumentPreprocessor:
-    def __init__(self, config_path):
+    def __init__(self, db_path, stopwords_path):
         """
         初始化预处理器
         
         参数:
-            config_path (str): 配置文件路径
+            db_path (str): SQLite数据库路径
+            stopwords_path (str): 停用词表路径
         """
-        # 加载配置文件
-        self.config = self._load_config(config_path)
-        
-        # 从配置文件获取参数
-        self.db_path = 'data/raw_data/crawler_data.db'
-        self.stopwords_path = './cn_stopwords.txt'
-        self.output_dir = 'data/preprocessed_data'
-        
+        self.db_path = db_path
+        self.stopwords_path = stopwords_path
         self.stopwords = self._load_stopwords()
         self.processed_data = None
         self.tfidf_vectorizer = None
         self.tfidf_matrix = None
+        self.output_dir = "../data/preprocessed_data"
         
         # 创建输出目录
         if not os.path.exists(self.output_dir):
             os.makedirs(self.output_dir)
-    
-    def _load_config(self, config_path):
-        """加载配置文件"""
-        try:
-            with open(config_path, 'r', encoding='utf-8') as f:
-                config = json.load(f)
-            logger.info(f"成功加载配置文件: {config_path}")
-            return config
-        except Exception as e:
-            logger.error(f"加载配置文件失败: {e}")
-            # 使用默认配置
-            default_config = {
-                "db_path": "data/raw_data/crawler_data.db",
-                "stopwords_path": "./cn_stopwords.txt",
-                "output_dir": "data/preprocessed_data",
-                "tfidf_params": {
-                    "min_df": 2,
-                    "max_df": 0.95
-                },
-                "sample_size": 5
-            }
-            logger.warning(f"使用默认配置")
-            return default_config
     
     def _load_stopwords(self):
         """加载停用词表"""
@@ -202,20 +174,19 @@ class ChineseDocumentPreprocessor:
         
         return processed_df
     
-    def vectorize_documents(self):
+    def vectorize_documents(self, min_df=2, max_df=0.95):
         """
         使用TF-IDF对文档进行向量化
+        
+        参数:
+            min_df: 词语最小文档频率
+            max_df: 词语最大文档频率
         """
         if self.processed_data is None or len(self.processed_data) == 0:
             logger.error("没有处理过的数据可用于向量化")
             return
         
         logger.info("开始TF-IDF向量化...")
-        
-        # 从配置中获取TF-IDF参数
-        tfidf_params = self.config.get('tfidf_params', {})
-        min_df = tfidf_params.get('min_df', 2)
-        max_df = tfidf_params.get('max_df', 0.95)
         
         # 初始化TF-IDF向量化器
         self.tfidf_vectorizer = TfidfVectorizer(
@@ -257,16 +228,16 @@ class ChineseDocumentPreprocessor:
         
         return self.tfidf_matrix, self.tfidf_vectorizer
     
-    def generate_document_vectors_sample(self):
+    def generate_document_vectors_sample(self, sample_size=5):
         """
         生成并展示文档向量样例
+        
+        参数:
+            sample_size: 样例文档数量
         """
         if self.tfidf_matrix is None or self.tfidf_vectorizer is None:
             logger.error("尚未完成向量化，无法生成文档向量样例")
             return
-        
-        # 从配置中获取样例大小参数
-        sample_size = self.config.get('sample_size', 5)
         
         # 获取样本文档
         sample_indices = np.random.choice(len(self.processed_data), min(sample_size, len(self.processed_data)), replace=False)
@@ -327,6 +298,9 @@ class ChineseDocumentPreprocessor:
         # 2. TF-IDF向量化
         self.vectorize_documents()
         
+        # 3. 生成文档向量样例
+        self.generate_document_vectors_sample()
+        
         end_time = datetime.now()
         processing_time = (end_time - start_time).total_seconds()
         logger.info(f"预处理流程完成，总耗时: {processing_time:.2f}秒")
@@ -346,6 +320,7 @@ class ChineseDocumentPreprocessor:
             "特征词汇量": len(self.tfidf_vectorizer.get_feature_names_out()) if self.tfidf_vectorizer else 0,
             "TF-IDF矩阵维度": self.tfidf_matrix.shape if self.tfidf_matrix is not None else (0, 0),
             "TF-IDF矩阵稀疏度": (1.0 - self.tfidf_matrix.nnz / (self.tfidf_matrix.shape[0] * self.tfidf_matrix.shape[1])) if self.tfidf_matrix is not None else 0,
+            "文档来源统计": self.processed_data['source'].value_counts().to_dict(),
             "标题平均长度(字符)": self.processed_data['clean_title'].str.len().mean(),
             "内容平均长度(字符)": self.processed_data['clean_content'].str.len().mean(),
             "标题平均分词数": self.processed_data['segmented_title'].str.split().str.len().mean(),
@@ -384,9 +359,10 @@ class ChineseDocumentPreprocessor:
 
 
 if __name__ == "__main__":
-    # 设置配置文件路径
-    config_path = "preprocess/config.json"
+    # 设置路径
+    db_path = "data/raw_data/crawler_data.db"
+    stopwords_path = "./cn_stopwords.txt"
     
     # 创建预处理器并运行
-    processor = ChineseDocumentPreprocessor(config_path)
+    processor = ChineseDocumentPreprocessor(db_path, stopwords_path)
     processor.run_full_pipeline()

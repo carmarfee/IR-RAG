@@ -45,9 +45,13 @@ export async function GetCrawlerConfig() {
     }
 }
 
-export async function SaveCrawlerConfig() {
+export async function SaveCrawlerConfig(config: any) {
     try {
-        const response = await crawler_api.get("/save_crawler_config");
+        const response = await crawler_api.post("/save_crawler_config", config, {
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        });
         return response.data;  // 返回实际数据而不是整个响应对象
     } catch (error) {
         console.error("SaveCrawlerConfig error:", error);

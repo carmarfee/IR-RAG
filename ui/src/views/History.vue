@@ -16,7 +16,6 @@ import SearchHistory from '../components/baseui/search-history.vue';
 <style scoped>
 .history-page {
     height: 100%;
-    padding: 20px;
     display: flex;
     flex-direction: column;
 }

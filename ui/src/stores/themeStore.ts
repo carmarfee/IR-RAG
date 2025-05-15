@@ -24,7 +24,7 @@ export const useThemeStore = defineStore('theme', {
         currentTheme: localStorage.getItem('theme') || 'light',
         themes: {
             light: {
-                primary: '#6d28d9', 
+                primary: '#F8F8FF',
                 secondary: '#8b5cf6',
                 background: '#f9fafb',
                 surface: '#ffffff',
@@ -36,7 +36,7 @@ export const useThemeStore = defineStore('theme', {
                 icon: '#6d28d9'
             },
             dark: {
-                primary: '#8b5cf6', 
+                primary: '#4E4E6A',
                 secondary: '#a78bfa',
                 background: '#1f2937',
                 surface: '#111827',

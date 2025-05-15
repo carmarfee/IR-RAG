@@ -28,7 +28,6 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, } from 'vue';
 import { useThemeStore, type ThemeColors } from '../stores/themeStore';
 
 const themeStore = useThemeStore();
@@ -49,82 +48,12 @@ const selectTheme = (theme: string) => {
     themeStore.setTheme(theme);
 };
 
-// 自定义颜色
-const customColors = ref<ThemeColors>({
-    ...themeStore.themes.light, // 默认从浅色主题复制
-});
-
-// 如果已有自定义主题，则加载它
-onMounted(() => {
-    // 初始化主题
-    themeStore.initTheme();
-
-    // 如果存在自定义主题，则加载
-    if (themeStore.themes.custom) {
-        customColors.value = { ...themeStore.themes.custom };
-    } else {
-        // 否则从当前主题复制
-        customColors.value = { ...themeStore.currentThemeColors };
-    }
-});
-
-// 更新自定义主题（实时预览，但不保存）
-const updateCustomTheme = () => {
-    // 将自定义颜色应用到CSS变量，但不保存到store
-    const root = document.documentElement;
-
-    root.style.setProperty('--primary-color', customColors.value.primary);
-    root.style.setProperty('--secondary-color', customColors.value.secondary);
-    root.style.setProperty('--background-color', customColors.value.background);
-    root.style.setProperty('--text-color', customColors.value.text);
-
-    // 临时将当前主题设为自定义
-    if (themeStore.currentTheme !== 'custom') {
-        themeStore.currentTheme = 'custom';
-    }
-};
-
-// 保存自定义主题
-const saveCustomTheme = () => {
-    // 添加或更新自定义主题
-    themeStore.$patch((state) => {
-        state.themes.custom = { ...customColors.value };
-    });
-
-    // 应用自定义主题
-    themeStore.setTheme('custom');
-
-    // 显示保存成功消息（如果有消息组件）
-    alert('自定义主题已保存');
-};
-
-// 重置自定义主题
-const resetCustomTheme = () => {
-    // 重置为当前选中的非自定义主题
-    const baseTheme = themeStore.currentTheme === 'custom' ? 'light' : themeStore.currentTheme;
-    customColors.value = { ...themeStore.themes[baseTheme] };
-    updateCustomTheme();
-};
 </script>
 
 <style scoped>
 .setting {
-    padding: 20px;
-    max-width: 800px;
     margin: 0 auto;
     color: var(--text-color);
-}
-
-.setting-header {
-    border-bottom: 1px solid var(--border-color);
-    padding-bottom: 10px;
-}
-
-.setting-header h2 {
-    font-size: 1.5rem;
-    font-weight: 600;
-    color: var(--primary-color);
-    margin: 0;
 }
 
 .setting-section {
@@ -145,6 +74,7 @@ const resetCustomTheme = () => {
 .theme-options {
     display: flex;
     flex-wrap: wrap;
+    justify-content: center;
     gap: 15px;
 }
 
@@ -212,7 +142,7 @@ const resetCustomTheme = () => {
     width: 24px;
     height: 24px;
     border-radius: 50%;
-    background-color: var(--primary-color);
+    background-color: greenyellow;
     color: white;
     display: flex;
     align-items: center;

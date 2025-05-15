@@ -11,11 +11,11 @@
                 </el-select>
             </div>
             <div class="search-actions">
-                <el-button type="danger" plain @click="confirmClearAll" :disabled="searchRecords.length === 0" style="color: aliceblue;">
+                <el-button type="danger" plain @click="confirmClearAll" :disabled="searchRecords.length === 0">
                     <el-icon>
                         <Delete />
                     </el-icon>
-                    清空历史
+                    清空
                 </el-button>
                 <el-button type="primary" @click="refreshHistory">
                     <el-icon>
@@ -199,12 +199,6 @@ const filterRecords = () => {
     currentPage.value = 1; // 重置到第一页
 };
 
-// 重置过滤器
-const resetFilter = () => {
-    searchKeyword.value = '';
-    timeRange.value = 'all';
-    currentPage.value = 1;
-};
 
 // 重新搜索
 const searchAgain = (keyword: string) => {
@@ -374,7 +368,6 @@ onMounted(async () => {
     height: 100%;
     display: flex;
     flex-direction: column;
-    padding: 20px;
 }
 
 .search-header {
@@ -506,6 +499,7 @@ onMounted(async () => {
     --el-button-border-color: #6366f1;
     --el-button-hover-bg-color: #4f46e5;
     --el-button-hover-border-color: #4f46e5;
+    --el-button-text-color: white
 }
 
 :deep(.el-button--danger) {
@@ -513,11 +507,7 @@ onMounted(async () => {
     --el-button-border-color: #f43f5e;
     --el-button-hover-bg-color: #e11d48;
     --el-button-hover-border-color: #e11d48;
-}
-
-:deep(.el-button--text) {
-    --el-button-hover-text-color: #6366f1;
-    --el-button-active-text-color: #4f46e5;
+    --el-button-text-color: white
 }
 
 :deep(.el-select .el-input__wrapper.is-focus) {

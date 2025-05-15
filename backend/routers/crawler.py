@@ -13,7 +13,7 @@ async def get_crawler_config():
     config = get_config()
     return config
 
-@router.get('/save_crawler_config')
+@router.post('/save_crawler_config')
 async def save_crawler_config(config:dict):
     result = save_config(config)
     return result
@@ -39,3 +39,4 @@ async def crawler_progress():
         event_generator(),
         media_type='text/event-stream'
     )
+    
