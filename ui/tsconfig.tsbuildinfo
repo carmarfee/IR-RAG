@@ -1,0 +1,1 @@
+{"root":["./auto-imports.d.ts","./components.d.ts","./vite.config.ts","./src/main.ts","./src/vite-env.d.ts","./src/api/rag.ts","./src/api/crawler.ts","./src/api/history.ts","./src/api/index.ts","./src/api/preprocess.ts","./src/api/search.ts","./src/api/settings.ts","./src/router/index.ts","./src/stores/searchstore.ts","./src/stores/themestore.ts"],"errors":true,"version":"5.7.3"}

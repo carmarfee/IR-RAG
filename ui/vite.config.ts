@@ -1,5 +1,6 @@
 import { defineConfig } from 'vite'
 import vue from '@vitejs/plugin-vue'
+import electron from 'vite-plugin-electron'
 import AutoImport from 'unplugin-auto-import/vite'
 import Components from 'unplugin-vue-components/vite'
 import { ElementPlusResolver } from 'unplugin-vue-components/resolvers'
@@ -14,17 +15,22 @@ export default defineConfig({
   }),
   Components({
     resolvers: [ElementPlusResolver()],
+  }),
+    electron({
+      entry: 'electron/main.js', // Electron主进程入口
   }),],
   resolve: {
     alias: {
       '@': resolve(__dirname, './src'),
-      '@root': resolve(__dirname, './../'),
     }
   },
   build: {
-    outDir: 'dist',
+    outDir: 'dist/renderer',
+    emptyOutDir: true
   },
   server: {
     port: 3000,
+    cors: true
   },
+  base: './'
 })

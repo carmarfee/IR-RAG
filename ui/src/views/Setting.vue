@@ -28,7 +28,7 @@
 </template>
 
 <script setup lang="ts">
-import { useThemeStore, type ThemeColors } from '../stores/themeStore';
+import { useThemeStore } from '../stores/themeStore';
 
 const themeStore = useThemeStore();
 

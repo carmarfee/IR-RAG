@@ -672,7 +672,6 @@ import {
     Right as ElIconRight,
     Search as ElIconSearch,
     Download as ElIconDownload,
-    FolderOpened as ElIconFolderOpened,
 } from '@element-plus/icons-vue';
 import { ElMessage } from 'element-plus';
 import { StartPreprocess } from '../api/preprocess';

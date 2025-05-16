@@ -1,15 +1,17 @@
 {
   "name": "ui",
   "private": true,
-  "version": "0.0.0",
-  "type": "module",
+  "version": "1.0.0",
+  "description": "IR System", 
+  "author": "carmarfee<3073640166@qq.com>", 
   "main": "electron/main.js",
   "scripts": {
     "dev": "vite",
-    "build": "vue-tsc -b && vite build",
+    "start": "electron .",
     "preview": "vite preview",
     "electron:dev": "concurrently \"vite\" \"electron .\"",
-    "electron:build": "electron-builder"
+    "build": "vite build",
+    "electron:build": "vite build & electron-builder"
   },
   "dependencies": {
     "axios": "^1.9.0",
@@ -31,6 +33,20 @@
     "unplugin-auto-import": "^19.1.2",
     "unplugin-vue-components": "^28.5.0",
     "vite": "^6.3.1",
+    "vite-plugin-electron": "^0.29.0",
     "vue-tsc": "^2.2.8"
+  },
+  "build": {
+    "appId": "com.carmarfee.app",
+    "productName": "IR-System",
+    "directories": {
+      "output": "release"
+    }
+  },
+  "files": [
+    "./dist/**/*"
+  ],
+  "win": {
+    "target": "nsis"
   }
 }
