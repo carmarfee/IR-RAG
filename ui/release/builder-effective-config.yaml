@@ -1,0 +1,7 @@
+directories:
+  output: release
+  buildResources: build
+appId: com.carmarfee.app
+productName: IR-System
+files: []
+electronVersion: 35.5.0

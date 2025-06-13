@@ -19,7 +19,7 @@ class SearchEngine:
     """
     基于倒排索引的搜索引擎
     """
-    
+
     def __init__(self, index_dir):
         """
         初始化搜索引擎
@@ -33,7 +33,7 @@ class SearchEngine:
         self.document_metadata = None
         self.vocabulary = None
         self.metadata = None
-        
+
     def load_index(self):
         """加载倒排索引及相关数据"""
         try:
@@ -41,12 +41,12 @@ class SearchEngine:
             index_file = os.path.join(self.index_dir, "inverted_index.json")
             with open(index_file, 'r', encoding='utf-8') as f:
                 self.inverted_index = json.load(f)
-            
+
             # 加载文档长度（可选）
             doc_lengths_file = os.path.join(self.index_dir, "doc_lengths.npy")
             if os.path.exists(doc_lengths_file):
                 self.doc_lengths = np.load(doc_lengths_file)
-            
+
             # 加载文档元数据（可选）
             doc_meta_file = os.path.join(self.index_dir, "document_metadata.csv")
             if os.path.exists(doc_meta_file):
@@ -59,31 +59,31 @@ class SearchEngine:
                     logger.info(f"成功加载文档元数据，包含{len(self.document_metadata)}行")
                 except Exception as e:
                     logger.warning(f"加载文档元数据失败: {e}，将使用简化结果展示")
-            
+
             # 加载元数据（可选）
             meta_file = os.path.join(self.index_dir, "index_metadata.json")
             if os.path.exists(meta_file):
                 with open(meta_file, 'r', encoding='utf-8') as f:
                     self.metadata = json.load(f)
-            
+
             # 加载词汇表（可选）
             vocab_file = os.path.join(self.index_dir, "vocabulary.txt")
             if os.path.exists(vocab_file):
                 with open(vocab_file, 'r', encoding='utf-8') as f:
                     self.vocabulary = [line.strip() for line in f.readlines()]
-            
+
             logger.info(f"成功加载倒排索引，包含{len(self.inverted_index)}个词条")
             if self.metadata:
                 logger.info(f"文档数量: {self.metadata.get('total_documents', '未知')}")
-            
+
             return True
         except Exception as e:
             logger.error(f"加载倒排索引失败: {e}")
             import traceback
             logger.error(traceback.format_exc())
             return False
-    
-    def search(self, query, top_k=10):
+
+    def search(self, query, top_k=10, score_threshold=0.01):
         """
         搜索查询
         
@@ -97,10 +97,10 @@ class SearchEngine:
         if self.inverted_index is None:
             logger.error("倒排索引尚未加载，请先调用load_index()")
             return []
-        
+
         start_time = time.time()
         logger.info(f"执行查询: '{query}'...")
-        
+
         # 1. 查询预处理：分词
         try:
             import jieba
@@ -109,36 +109,37 @@ class SearchEngine:
         except ImportError:
             # 如果没有jieba，简单按空格分词
             query_terms = query.split()
-        
+
         logger.info(f"查询分词结果: {', '.join(query_terms)}")
-        
+
         # 2. 计算每个文档的得分
         doc_scores = defaultdict(float)
         matched_terms = []
-        
+
         for term in query_terms:
             if term in self.inverted_index:
                 matched_terms.append(term)
-                
+
                 # 为每个包含该词的文档增加得分
                 for doc_id_str, weight in self.inverted_index[term]:
                     # 注意：JSON中的键都是字符串，需要转换为整数
                     doc_id = int(doc_id_str) if isinstance(doc_id_str, str) else doc_id_str
                     doc_scores[doc_id] += weight
-        
+
         if not doc_scores:
             logger.info(f"未找到匹配的文档，查询耗时: {time.time() - start_time:.2f}秒")
             return []
-        
+
         # 3. 使用最小堆找出得分最高的top_k个文档
         top_docs = []
         for doc_id, score in doc_scores.items():
-            if len(top_docs) < top_k:
-                heapq.heappush(top_docs, (score, doc_id))
-            else:
-                if score > top_docs[0][0]:
-                    heapq.heappushpop(top_docs, (score, doc_id))
-        
+            if score >= score_threshold:
+                if len(top_docs) < top_k:
+                    heapq.heappush(top_docs, (score, doc_id))
+                else:
+                    if score > top_docs[0][0]:
+                        heapq.heappushpop(top_docs, (score, doc_id))
+
         # 4. 按得分降序排列结果
         results = []
         for score, doc_id in sorted(top_docs, reverse=True):
@@ -147,7 +148,7 @@ class SearchEngine:
                 'score': score,
                 'matched_terms': matched_terms
             }
-            
+
             # 修改: 添加文档元数据 - 通过doc_id查找元数据，而不是通过位置索引
             if self.document_metadata is not None:
                 try:
@@ -161,59 +162,59 @@ class SearchEngine:
                         logger.warning(f"在元数据中找不到文档ID {doc_id}")
                 except Exception as e:
                     logger.warning(f"获取文档{doc_id}元数据失败: {e}")
-            
+
             results.append(result)
-        
+
         logger.info(f"找到{len(doc_scores)}个匹配文档，返回得分最高的{len(results)}个")
         logger.info(f"匹配的查询词: {', '.join(matched_terms)}")
         logger.info(f"搜索耗时: {time.time() - start_time:.2f}秒")
-        
+
         return results
-    
+
     def get_term_stats(self):
         """获取索引词汇的统计信息"""
         if not self.inverted_index:
             return None
-        
+
         # 计算每个词的文档频率
         term_stats = []
         for term, postings in self.inverted_index.items():
             doc_freq = len(postings)  # 包含该词的文档数
             max_weight = max(weight for _, weight in postings)  # 最大TF-IDF权重
             avg_weight = sum(weight for _, weight in postings) / doc_freq  # 平均TF-IDF权重
-            
+
             term_stats.append({
                 'term': term,
                 'document_frequency': doc_freq,
                 'max_tfidf': max_weight,
                 'avg_tfidf': avg_weight
             })
-        
+
         # 按文档频率降序排序
         term_stats.sort(key=lambda x: x['document_frequency'], reverse=True)
-        
+
         return term_stats
-    
+
     def interactive_search(self):
         """交互式搜索界面"""
         print("\n======= 倒排索引搜索引擎 =======")
         print("输入'quit'或'exit'退出")
-        
+
         while True:
             query = input("\n请输入搜索词: ").strip()
             if query.lower() in ['quit', 'exit', 'q']:
                 break
-            
+
             if not query:
                 continue
-            
+
             # 执行搜索
             top_k = 10
             results = self.search(query, top_k=top_k)
-            
+
             # 显示搜索结果
             print(f"\n找到 {len(results)} 个匹配文档:")
-            
+
             if results:
                 for i, result in enumerate(results):
                     doc_id = result['doc_id']
@@ -226,20 +227,20 @@ class SearchEngine:
                     print("-" * 60)
             else:
                 print("未找到匹配的文档，请尝试其他关键词。")
-                
+
             # 询问是否需要查看文档详情
             if results:
                 detail_choice = input("\n输入文档编号查看详情，或按Enter继续: ").strip()
                 if detail_choice.isdigit() and 1 <= int(detail_choice) <= len(results):
                     doc_id = results[int(detail_choice)-1]['doc_id']
                     self.show_document_detail(doc_id)
-    
+
     def show_document_detail(self, doc_id):
         """显示文档详细信息"""
         if self.document_metadata is None:
             print(f"无法获取文档{doc_id}的详细信息，元数据不可用")
             return
-            
+
         try:
             # 修改: 使用索引查找而不是位置查找
             if doc_id in self.document_metadata.index:
@@ -247,17 +248,17 @@ class SearchEngine:
                 print("\n" + "="*60)
                 print(f"文档详情 (ID: {doc_id})")
                 print("="*60)
-                
+
                 # 显示文档元数据
                 for col in self.document_metadata.columns:
                     print(f"{col}: {doc[col]}")
-                
+
                 print("="*60)
             else:
                 print(f"无法获取文档{doc_id}的详细信息，文档ID不在元数据中")
         except Exception as e:
             print(f"获取文档详情时发生错误: {e}")
-        
+
         input("\n按Enter返回搜索...")
 
 

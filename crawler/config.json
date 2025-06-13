@@ -13,7 +13,7 @@
         "https://news.whu.edu.cn/ljrw.htm",
         "https://news.whu.edu.cn/stkj/ljyx.htm"
     ],
-    "max_pages": 10,
+    "max_pages": 10000,
     "iterations": 10,
     "timeout": 20,
     "encoding_settings": {

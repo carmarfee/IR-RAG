@@ -264,6 +264,7 @@ const startCrawler = async () => {
         const response = await StartCrawler();
 
         if (response.success || response.info) {
+            crawlerStatus.value = 'running';
             const message = response.success || response.info;
             addLog('info', message);
             // 连接到SSE进度更新

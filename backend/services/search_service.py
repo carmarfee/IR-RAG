@@ -13,7 +13,7 @@ def search_engine(
     
     # 执行搜索
     if query:
-        results = search_engine.search(query, top_k=10)
+        results = search_engine.search(query, top_k=50,score_threshold=0.2)
         if results:
             return results
         else:
@@ -31,4 +31,15 @@ def get_snapshot(
     if raw_data:
         return raw_data
     return {"未找到对应的网页快照"}
+
+def get_content(
+    doc_id: int
+):
+    docs_db = DBManager().get_db(name='docs')
+    docs_db.connect()
+    raw_data = docs_db.fetch_one("SELECT content FROM pages WHERE id = ?", (doc_id,))
+    docs_db.close()
+    if raw_data:
+        return raw_data
+    return {"未找到对应的网页内容"}
     

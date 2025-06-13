@@ -19,25 +19,11 @@ function createWindow() {
             symbolColor: 'black'
         }
     });
-    // mainWindow.loadURL('http://localhost:3000');
-    mainWindow.loadFile(join(__dirname, '../dist/renderer/index.html'))
-}
-let pythonProcess = null;
-function startBackend() { 
-    const backendPath = join(__dirname, '../../run.py');
-    pythonProcess = spawn('python', [backendPath]);
-}
-
-function cleanup() {
-    // 关闭Python进程
-    if (pythonProcess) {
-        pythonProcess.kill();
-        pythonProcess = null;
-    }
+    mainWindow.loadURL('http://localhost:3000');
+    // mainWindow.loadFile(join(__dirname, '../dist/renderer/index.html'))
 }
 
 app.whenReady().then(() => {
-    startBackend();
     createWindow();
 
     app.on('activate', () => {
@@ -51,9 +37,4 @@ app.on('window-all-closed', () => {
     if (process.platform !== 'darwin') {
         app.quit();
     }
-});
-
-// 应用即将退出
-app.on('will-quit', () => {
-    cleanup();
 });

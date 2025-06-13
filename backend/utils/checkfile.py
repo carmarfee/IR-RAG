@@ -64,26 +64,3 @@ def check_multiple_files(file_paths):
     for file_path in file_paths:
         results[file_path] = check_file(file_path)
     return results
-
-if __name__ == "__main__":
-    # 设置日志
-    logging.basicConfig(
-        level=logging.INFO,
-        format='%(asctime)s - %(levelname)s - %(message)s',
-        datefmt='%Y-%m-%d %H:%M:%S'
-    )
-    
-    # 测试相对路径
-    test_path = "../data/example.txt"
-    
-    # 检查单个文件
-    result = check_file(test_path)
-    print(result)
-    
-    # 测试多个文件
-    test_paths = ["../data/example.txt", "./config.json", "../../logs/app.log"]
-    results = check_multiple_files(test_paths)
-    for path, info in results.items():
-        print(f"\n{path}:")
-        for key, value in info.items():
-            print(f"  {key}: {value}")

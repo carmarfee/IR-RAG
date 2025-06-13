@@ -28,3 +28,12 @@ export async function GetSnapShot(doc_id: number) {
     });
     return response;
 }
+
+export async function GetContent(doc_id: number) {
+    const response = await search_api.get("/get_content", {
+        params: {
+            doc_id: doc_id
+        }
+    });
+    return response;
+}

@@ -20,7 +20,7 @@ class CrawlerManager:
     def __init__(self):
         self.crawler = None
         self.config_file = "crawler/config.json"
-        self.output_dir = "data/test_data"
+        self.output_dir = "data/raw_data"
         self.is_running = False
     
     def initialize_crawler(self):

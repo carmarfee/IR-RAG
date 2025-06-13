@@ -2,8 +2,8 @@
   "name": "ui",
   "private": true,
   "version": "1.0.0",
-  "description": "IR System", 
-  "author": "carmarfee<3073640166@qq.com>", 
+  "description": "IR System",
+  "author": "carmarfee<3073640166@qq.com>",
   "main": "electron/main.js",
   "scripts": {
     "dev": "vite",
@@ -14,6 +14,7 @@
     "electron:build": "vite build & electron-builder"
   },
   "dependencies": {
+    "@mistralai/mistralai": "^1.7.1",
     "axios": "^1.9.0",
     "element-plus": "^2.9.8",
     "highlight.js": "^11.11.1",
@@ -24,6 +25,7 @@
     "vue-router": "^4.5.0"
   },
   "devDependencies": {
+    "@types/node": "^22.15.29",
     "@vitejs/plugin-vue": "^5.2.2",
     "@vue/tsconfig": "^0.7.0",
     "concurrently": "^9.1.2",
